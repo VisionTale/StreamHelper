@@ -1,4 +1,11 @@
+Werkzeug
 flask
 python-dotenv
 flask-wtf
 WTForms
+flask-sqlalchemy
+SQLAlchemy
+flask-migrate
+alembic
+flask-login
+email-validator

@@ -34,6 +34,9 @@ class Config:
         config['flask'] = {}
         config['flask']['SECRET_KEY'] = getenv('SECRET_KEY') or urandom(24).hex()
         config['flask']['TEMPLATES_AUTO_RELOAD'] = getenv('TEMPLATES_AUTO_RELOAD') or "true"
+        config['flask']['SQLALCHEMY_DATABASE_URI'] = getenv('DATABASE_URL') or 'sqlite:///' + join(cache_path,
+                                                                                                   'streamhelper.db')
+        config['flask']['SQLALCHEMY_TRACK_MODIFICATIONS'] = getenv('DATABASE_TRACK_MODIFICATIONS') or 'false'
         config['flask']['template_path'] = getenv('SH_TEMPLATE_PATH') or join(data_path, 'templates')
         config['flask']['static_path'] = getenv('SH_STATIC_PATH') or join(data_path, 'static')
         config['webapi'] = {}
