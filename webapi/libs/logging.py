@@ -25,11 +25,11 @@ def setup(webapi, config: Config):
 
     if 'FILE' in log_types:
 
-        from logging import FileHandler
+        from logging.handlers import RotatingFileHandler
 
         log_fp = config.get('webapi', 'log_fp')
         create_log_folder(log_fp)
-        file_handler = FileHandler(filename=log_fp, encoding='utf-8', mode='w')
+        file_handler = RotatingFileHandler(filename=log_fp, encoding='utf-8', mode='w', maxBytes=10240, backupCount=10)
         file_handler.setFormatter(formatter)
         logger.addHandler(file_handler)
 

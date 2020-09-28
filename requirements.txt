@@ -9,3 +9,4 @@ flask-migrate
 alembic
 flask-login
 email-validator
+flask-bootstrap

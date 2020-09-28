@@ -2,6 +2,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_bootstrap import Bootstrap
 from webapi.libs.config import Config
 from webapi.libs.logging import setup
 
@@ -24,9 +25,12 @@ migrate = Migrate(webapi, db)
 # Session handler
 login = LoginManager(webapi)
 login.login_view = 'login'
+login.login_message = "Please log in to continue."
+
+bootstrap = Bootstrap(webapi)
 
 # Load modules
-from webapi.modules import routes, models
+from webapi.modules import routes, models, errors
 from webapi.modules.models import User
 
 
