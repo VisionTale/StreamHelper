@@ -1,10 +1,11 @@
-from flask import render_template
-from webapi import webapi
+from flask import render_template, flash, redirect, url_for
+from webapi import webapi, logger
+from webapi.modules.forms import LoginForm
 
 
 @webapi.route('/')
-@webapi.route('/index')
-def index():
+@webapi.route('/dashboard')
+def dashboard():
     user = {'username': 'Simon'}
     posts = [
         {
@@ -20,4 +21,21 @@ def index():
             'body': 'It is open!'
         }
     ]
-    return render_template('index.html', user=user, posts=posts, app_name='StreamHelper')
+    return render_template('dashboard.html', user=user, posts=posts, app_name='StreamHelper')
+
+
+@webapi.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        flash('Login requested for user {}, remember_me={}'.format(
+            form.username.data, form.remember_me.data))
+        logger.info('Login requested for user {}, remember_me={}'.format(
+            form.username.data, form.remember_me.data))
+        return redirect(url_for('dashboard'))
+    return render_template('login.html', title='Sign In', form=form)
+
+
+@webapi.route('/settings', methods=['GET', 'POST'])
+def settings():
+    return "Not yet implemented"

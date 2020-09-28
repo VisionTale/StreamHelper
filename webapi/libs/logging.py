@@ -44,6 +44,8 @@ def setup(webapi, config: Config):
 
     webapi.logger.addHandler(logger)
 
+    return webapi.logger
+
 
 def disassemble(webapi):
 
