@@ -4,7 +4,7 @@ from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from webapi.libs.config import Config
-from webapi.libs.logging import setup
+from webapi.libs.log import setup_webapi as setup
 
 # Config loading
 config = Config()
