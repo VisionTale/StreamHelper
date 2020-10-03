@@ -25,17 +25,17 @@
             {{ current_user.username }}
         </li>
             <li>
-                <a href="{{ url_for('dashboard') }}">Dashboard</a>
+                <a href="{{ url_for('base.dashboard') }}">Dashboard</a>
             </li>
             <li>
                 {% if current_user.is_anonymous %}
-                <a href="{{ url_for('login') }}">Login</a>
+                <a href="{{ url_for('user.login') }}">Login</a>
                 {% else %}
-                <a href="{{ url_for('logout') }}">Logout</a>
+                <a href="{{ url_for('user.logout') }}">Logout</a>
                 {% endif %}
             </li>
             <li>
-                <a href="{{ url_for('settings') }}">Settings</a>
+                <a href="{{ url_for('base.settings') }}">Settings</a>
             </li>
         </ul>
     </nav>

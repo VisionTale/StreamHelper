@@ -17,13 +17,17 @@ class User(UserMixin, db.Model):
 
     @staticmethod
     def exists_username(username):
-        user = User.query.filter_by(username=username).first()
-        return user is not None
+        return User.get_user(username) is not None
 
     @staticmethod
     def exists_email(email):
         user = User.query.filter_by(email=email).first()
         return user is not None
+
+    @staticmethod
+    def get_user(username):
+        user = User.query.filter_by(username=username).first()
+        return user
 
     def __repr__(self):
         return '<User {} : {}>'.format(self.username, self.email)

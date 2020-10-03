@@ -23,7 +23,7 @@ class Config:
 
         To change individual config options, see Config::create_default_config.
         """
-        self._config_fp = getenv('SH_CONFIG_FP') or join(CACHE_DIR, 'config.ini')
+        self._config_fp = getenv('SH_CONFIG_FP') or join(CONFIG_DIR, 'config.ini')
         if not isfile(self._config_fp):
             Config.create_default_config(self._config_fp)
         self._config = ConfigParser()
@@ -102,6 +102,11 @@ class Config:
         config['webapi']['log_fp'] = getenv('SH_LOG_FP') or join(CACHE_DIR, 'streamhelper.log')
         config['webapi']['log_types'] = getenv('SH_LOG_TYPES') or 'STREAM, FILE'
         config['webapi']['log_level'] = getenv('SH_LOG_LEVEL') or 'DEBUG'
+
+        from os.path import isdir, dirname
+        if not isdir(dirname(fp)):
+            from webapi.libs.system import create_folder
+            create_folder(dirname(fp))
 
         with open(fp, 'w') as f:
             config.write(f)

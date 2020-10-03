@@ -11,30 +11,53 @@ config = Config()
 template_folder = config.get('flask', 'template_path')
 static_folder = config.get('flask', 'static_path')
 
-# Initialization
-webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
-webapi.config.from_mapping(config.flask_config())
-
-# Logging
-logger = setup(webapi, config)
-
-# Database
-db = SQLAlchemy(webapi)
-migrate = Migrate(webapi, db)
-
-# Session handler
-login = LoginManager(webapi)
-login.login_view = 'login'
-login.login_message = "Please log in to continue."
-
-bootstrap = Bootstrap(webapi)
-
-# Load modules
-from webapi.modules import routes, models, errors
-from webapi.modules.models import User
+# Pre-Init
+db = SQLAlchemy()
+migrate = Migrate()
+login = LoginManager()
+bootstrap = Bootstrap()
+logger = None
 
 
-@webapi.shell_context_processor
-def make_shell_context():
-    # Selected packages that will be pre-imported if using 'flask shell'
-    return {'db': db, 'User': User, 'models': models, 'routes': routes}
+def create_app():
+    global logger
+
+    # Initialization
+    webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
+    webapi.config.from_mapping(config.flask_config())
+
+    # Logging
+    logger = setup(webapi, config)
+
+    # Database
+    db.init_app(webapi)
+    migrate.init_app(webapi, db)
+
+    # Session handler
+    login.init_app(webapi)
+    login.login_view = 'user.login'
+    login.login_message = "Please log in to continue."
+
+    # Boostrap
+    bootstrap.init_app(webapi)
+
+    # Load modules
+    from webapi.modules import models
+    from webapi.modules.models import User
+
+    # Load blueprints
+    from os import listdir
+    from os.path import isdir, join
+    from importlib import import_module
+    for d in listdir('webapi/blueprints'):  # TODO config option
+        if not isdir(join('webapi/blueprints', d)) or d == '__pycache__':
+            continue
+        logger.debug(f'Initializing directory {d}')
+        plugin = import_module(f'webapi.blueprints.{d}')
+        webapi.register_blueprint(plugin.bp)
+        logger.debug('Finished')
+
+    return webapi
+
+
+

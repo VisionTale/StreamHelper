@@ -1,7 +1,7 @@
 from logging import Logger
 
 
-def create_folder(folder_path, logger: Logger):
+def create_folder(folder_path, logger: Logger = None):
     """
     Create a folder. If the folder cannot be created, administrator rights are requested (only works on linux) and the
     owner of the folder will be set to the current user.
@@ -24,12 +24,20 @@ def create_folder(folder_path, logger: Logger):
                 process = run('pkexec sh -c "mkdir -p %s && chown -R %s %s"' % (folder_path, getuser(), folder_path),
                               shell=True, executable='/bin/bash', capture_output=True)
                 if process.returncode != 0:
-                    logger.fatal(f"Folder {folder_path} cannot be created: {process.stderr.decode('ascii')}")
+                    error_message = f"Folder {folder_path} cannot be created: {process.stderr.decode('ascii')}"
+                    if logger:
+                        logger.fatal(error_message)
+                    else:
+                        print(error_message)
             else:
                 # TODO Help needed for administrator right request on other platforms
-                logger.fatal(f"Cannot create {folder_path}. Create the folder by hand and assign current user read and "
-                             f"write rights, start with administrator rights (not recommended) or change the directory"
-                             f"in the config (or via environment variables if supported)")
+                error_message = f"Cannot create {folder_path}. Create the folder by hand and assign current user read" \
+                                f" and write rights, start with administrator rights (not recommended) or change the" \
+                                f" directory in the config (or via environment variables if supported)"
+                if logger:
+                    logger.fatal(error_message)
+                else:
+                    print(error_message)
 
 
 def load_export_file(file_path):
