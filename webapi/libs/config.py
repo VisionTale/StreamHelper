@@ -21,13 +21,13 @@ class Config:
                 $HOME/.config/visiontale/streamhelper
             - SH_CONFIG_FP : Filepath to store the configuration. Defaults to $SH_CONFIG_DIR/config.ini
 
-        To change individual config options, see Config::create_default_config.
+        To change individual config options, see Config::update_config.
         """
         self._config_fp = getenv('SH_CONFIG_FP') or join(CONFIG_DIR, 'config.ini')
-        if not isfile(self._config_fp):
-            Config.create_default_config(self._config_fp)
         self._config = ConfigParser()
-        self._config.read(self._config_fp)
+        if isfile(self._config_fp):
+            self._config.read(self._config_fp)
+        self.update_config()
 
     def get(self, app, key) -> str:
         """
@@ -44,11 +44,33 @@ class Config:
         :param app: the plugins internal name
         :param key: the key within the application
         :param value: the value to set
-        :return:
         """
         self._config[app][key] = value
         with open(self._config_fp, 'w') as f:
             self._config.write(f)
+
+    def set_if_none(self, app, key, value):
+        """
+        Set a configuration value for a plugin but only if the value does not exist.
+        :param app: the plugins internal name
+        :param key: the key within the application
+        :param value: the value to set
+        """
+        if app not in self._config.sections():
+            self.create_section(app)
+        if key in self._config[app].keys():
+            return
+        self._config[app][key] = value
+        with open(self._config_fp, 'w') as f:
+            self._config.write(f)
+
+    def create_section(self, app):
+        """
+        Create a section for the plugin with the given name if not already existent.
+        :param app: the plugins internal name
+        """
+        if app not in self._config.sections():
+            self._config.add_section(app)
 
     def flask_config(self) -> dict:
         """
@@ -60,15 +82,14 @@ class Config:
             d[key.upper()] = d[key]
         return d
 
-    @staticmethod
-    def create_default_config(fp):
+    def update_config(self):
         """
-        Create the configuration file.
+        Updates the current config, adding all missing default values.
 
         Environment variables:
         - SH_CONFIG_DIR : Fallback directory for configuration files. Defaults to
                 $HOME/.config/visiontale/streamhelper
-        - SH_CACHE_DIR : Fallback directory for non permament files (e.g. logs). Defaults to
+        - SH_CACHE_DIR : Fallback directory for non permanent files (e.g. logs). Defaults to
                 $HOME/.cache/visiontale/streamhelper
         - SH_DATA_DIR : Fallback directory for configuration files. Defaults to
                 $HOME/.local/share/visiontale/streamhelper
@@ -85,28 +106,25 @@ class Config:
         - SH_LOG_TYPES : Log types. Currently STREAM (output to console) and FILE (output to logfile) are supported.
             Set multiple types by comma or space separation. Defaults to 'STREAM, FILE'
         - SH_LOG_LEVEL : Log level. Supported are CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET. Defaults to DEBUG.
-
-        :param fp: filepath to write the config to
-        :return:
+        - SH_PLUGIN_PATH : Directory containing all plugins as folders. Defaults to $SH_DATA_DIR/blueprints.
+        - SH_MACRO_PATH : Directory containing all macros as folders. Defaults to $SH_DATA_DIR/macros.
         """
-        config = ConfigParser()
-        config['flask'] = {}
-        config['flask']['SECRET_KEY'] = getenv('SECRET_KEY') or urandom(24).hex()
-        config['flask']['TEMPLATES_AUTO_RELOAD'] = getenv('TEMPLATES_AUTO_RELOAD') or "true"
-        config['flask']['SQLALCHEMY_DATABASE_URI'] = getenv('DATABASE_URI') or 'sqlite:///' + join(CONFIG_DIR,
-                                                                                                   'streamhelper.db')
-        config['flask']['SQLALCHEMY_TRACK_MODIFICATIONS'] = getenv('DATABASE_TRACK_MODIFICATIONS') or 'false'
-        config['flask']['template_path'] = getenv('SH_TEMPLATE_PATH') or join(DATA_DIR, 'templates')
-        config['flask']['static_path'] = getenv('SH_STATIC_PATH') or join(DATA_DIR, 'static')
-        config['webapi'] = {}
-        config['webapi']['log_fp'] = getenv('SH_LOG_FP') or join(CACHE_DIR, 'streamhelper.log')
-        config['webapi']['log_types'] = getenv('SH_LOG_TYPES') or 'STREAM, FILE'
-        config['webapi']['log_level'] = getenv('SH_LOG_LEVEL') or 'DEBUG'
 
         from os.path import isdir, dirname
-        if not isdir(dirname(fp)):
+        if not isdir(dirname(self._config_fp)):
             from webapi.libs.system import create_folder
-            create_folder(dirname(fp))
+            create_folder(dirname(self._config_fp))
 
-        with open(fp, 'w') as f:
-            config.write(f)
+        self.set_if_none('flask', 'SECRET_KEY', getenv('SECRET_KEY') or urandom(24).hex())
+        self.set_if_none('flask', 'TEMPLATES_AUTO_RELOAD', getenv('TEMPLATES_AUTO_RELOAD') or "true")
+        self.set_if_none('flask', 'SQLALCHEMY_DATABASE_URI', getenv('DATABASE_URI') or 'sqlite:///' +
+                         join(CONFIG_DIR, 'streamhelper.db'))
+        self.set_if_none('flask', 'SQLALCHEMY_TRACK_MODIFICATIONS', getenv('DATABASE_TRACK_MODIFICATIONS') or 'false')
+        self.set_if_none('flask', 'template_path', getenv('SH_TEMPLATE_PATH') or join(DATA_DIR, 'templates'))
+        self.set_if_none('flask', 'static_path', getenv('SH_STATIC_PATH') or join(DATA_DIR, 'static'))
+
+        self.set_if_none('webapi', 'log_fp', getenv('SH_LOG_FP') or join(CACHE_DIR, 'streamhelper.log'))
+        self.set_if_none('webapi', 'log_types', getenv('SH_LOG_TYPES') or 'STREAM, FILE')
+        self.set_if_none('webapi', 'log_level', getenv('SH_LOG_LEVEL') or 'DEBUG')
+        self.set_if_none('webapi', 'plugin_path', getenv('SH_PLUGIN_PATH') or join(DATA_DIR, 'blueprints'))
+        self.set_if_none('webapi', 'macro_path', getenv('SH_MACRO_PATH') or join(DATA_DIR, 'macros'))

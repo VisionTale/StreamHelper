@@ -1,6 +1,6 @@
 from flask import Blueprint
 
-NAME = 'api'
+name = 'api'
 
-bp = Blueprint(NAME, __name__, url_prefix='/api')
+bp = Blueprint(name, __name__, url_prefix='/api')
 

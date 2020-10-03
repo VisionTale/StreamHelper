@@ -1,7 +1,8 @@
 from flask import Blueprint
 
-NAME = 'base'
+name = 'base'
 
-bp = Blueprint('base', __name__, template_folder='templates', static_folder='static')
+bp = Blueprint(name, __name__, template_folder='templates', static_folder='static')
+
 
 from . import routes

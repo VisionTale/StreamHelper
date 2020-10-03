@@ -17,10 +17,11 @@ migrate = Migrate()
 login = LoginManager()
 bootstrap = Bootstrap()
 logger = None
+plugins = dict()
 
 
 def create_app():
-    global logger
+    global logger, plugins
 
     # Initialization
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -52,10 +53,15 @@ def create_app():
     for d in listdir('webapi/blueprints'):  # TODO config option
         if not isdir(join('webapi/blueprints', d)) or d == '__pycache__':
             continue
-        logger.debug(f'Initializing directory {d}')
-        plugin = import_module(f'webapi.blueprints.{d}')
-        webapi.register_blueprint(plugin.bp)
-        logger.debug('Finished')
+        logger.debug(f'Trying to initialize plugin {d}')
+        try:
+            plugin = import_module(f'webapi.blueprints.{d}')
+            plugins[plugin.name] = plugin
+            webapi.register_blueprint(plugin.bp)
+
+            logger.debug('Finished')
+        except Exception as e:
+            logger.warn(f'Loading plugin {d} has failed: {e}')
 
     return webapi
 
