@@ -34,9 +34,12 @@ class Config:
         Get a configuration value for a plugin.
         :param app: the plugins internal name
         :param key: the key within the application
-        :return: the value associated with the key
+        :return: the value associated with the key (or an empty string if non existent)
         """
-        return self._config[app][key]
+        try:
+            return self._config[app][key]
+        except KeyError:
+            return ""
 
     def set(self, app, key, value):
         """
