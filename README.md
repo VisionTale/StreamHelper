@@ -1,1 +1,7 @@
-StreamHelper
+# StreamHelper
+
+
+
+## License
+
+[MIT License](./LICENSE)
