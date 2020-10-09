@@ -56,7 +56,16 @@ def create_app():
         logger.debug(f'Trying to initialize plugin {d}')
         try:
             plugin = import_module(f'webapi.blueprints.{d}')
+
+            attrs = ['name', 'bp']
+            for attr in attrs:
+                if not hasattr(plugin, attr):
+                    raise AttributeError(f'Plugin {d} misses of the attribute {attr}, which is expected by the '
+                                         f'framework')
+
             plugins[plugin.name] = plugin
+            plugin.config = config
+            plugin.logger = logger
             webapi.register_blueprint(plugin.bp)
 
             logger.debug('Finished')
