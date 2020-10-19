@@ -1,1 +1,5 @@
-overlay
+/*
+!/api/
+!/base/
+!/errors/
+!/user/

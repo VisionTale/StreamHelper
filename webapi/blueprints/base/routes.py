@@ -28,3 +28,8 @@ def dashboard():
 @bp.route('/settings', methods=['GET', 'POST'])
 def settings():
     return "Not yet implemented"
+
+
+@bp.route('/ping')
+def ping():
+    return "", 200

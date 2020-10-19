@@ -94,7 +94,7 @@ class Config:
                 $HOME/.config/visiontale/streamhelper
         - SH_CACHE_DIR : Fallback directory for non permanent files (e.g. logs). Defaults to
                 $HOME/.cache/visiontale/streamhelper
-        - SH_DATA_DIR : Fallback directory for configuration files. Defaults to
+        - SH_DATA_DIR : Fallback directory for additional files (templates, plugins, etc.). Defaults to
                 $HOME/.local/share/visiontale/streamhelper
         - SECRET_KEY : Secret key for security of flask. Never publish your production key! Will be randomly generated
             otherwise
@@ -131,3 +131,7 @@ class Config:
         self.set_if_none('webapi', 'log_level', getenv('SH_LOG_LEVEL') or 'DEBUG')
         self.set_if_none('webapi', 'plugin_path', getenv('SH_PLUGIN_PATH') or join(DATA_DIR, 'blueprints'))
         self.set_if_none('webapi', 'macro_path', getenv('SH_MACRO_PATH') or join(DATA_DIR, 'macros'))
+
+
+if __name__ == '__main__':
+    Config()

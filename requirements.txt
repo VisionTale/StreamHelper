@@ -1,9 +1,12 @@
+requests
+waitress
 Werkzeug
 flask
 python-dotenv
 flask-wtf
 WTForms
 WTForms-Components
+colour
 flask-sqlalchemy
 SQLAlchemy
 flask-migrate
@@ -12,3 +15,4 @@ flask-login
 email-validator
 flask-bootstrap
 validators
+
