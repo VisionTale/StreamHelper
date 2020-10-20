@@ -2,7 +2,19 @@
 
 {% block page_content %}
     <h1>Hi, {{ current_user.username }}!</h1>
-    {% for post in posts %}
-    <div><p>{{ post.author.username }} says: <b>{{ post.body }}</b></p></div>
-    {% endfor %}
+    {% with plugins = get_plugins() %}
+        {% if plugins %}
+            <div class="card-deck">
+                {% for plugin in plugins %}
+                    <div class="card border-primary mb-3", style="max-width: 40%;">
+                        <div class="card-header">Plugin</div>
+                        <div class="card-body">
+                            <h5 class="card-title">{{ plugin[0] }}</h5>
+                            <p class="card-text">{{ plugin[1] }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
 {% endblock %}

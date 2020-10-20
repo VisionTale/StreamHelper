@@ -1,10 +1,10 @@
-from flask import Flask
+from flask import Flask, Blueprint
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 from webapi.libs.config import Config
-from webapi.libs.log import setup_webapi as setup
+from webapi.libs.log import setup_webapi as setup, Logger
 
 # Config loading
 config = Config()
@@ -16,8 +16,10 @@ db = SQLAlchemy()
 migrate = Migrate()
 login = LoginManager()
 bootstrap = Bootstrap()
-logger = None
+logger: Logger = None
 plugins = dict()
+active_plugins = list()
+plugin_pages = list()
 
 
 def create_app():
@@ -53,26 +55,53 @@ def create_app():
     for d in listdir('webapi/blueprints'):  # TODO config option
         if not isdir(join('webapi/blueprints', d)) or d == '__pycache__':
             continue
-        logger.debug(f'Trying to initialize plugin {d}')
+        logger.debug(f'Loading plugin {d}')
         try:
             plugin = import_module(f'webapi.blueprints.{d}')
 
-            attrs = ['name', 'bp']
+            attrs = ['set_blueprint']
             for attr in attrs:
                 if not hasattr(plugin, attr):
-                    raise AttributeError(f'Plugin {d} misses of the attribute {attr}, which is expected by the '
-                                         f'framework')
+                    raise AttributeError(f'Plugin {d} misses the attribute {attr}, which is expected by the framework.')
 
-            plugins[plugin.name] = plugin
+            plugin.name = d
             plugin.config = config
             plugin.logger = logger
-            webapi.register_blueprint(plugin.bp)
+            blueprint = Blueprint(
+                d,
+                d,
+                template_folder=f'webapi/blueprints/{d}/templates',
+                static_folder=f'webapi/blueprints/{d}/static',
+                url_prefix=f'/{d}'
+            )
+            plugin.set_blueprint(blueprint)
+            plugins[d] = plugin
+
+            webapi.register_blueprint(blueprint)
+            if hasattr(plugin, 'provides_pages'):
+                for page in plugin.provides_pages:
+                    plugin_pages.append((page[0], f'{plugin.name}.{page[1]}', page[2] if len(page) > 2 else 1000, d))
 
             logger.debug('Finished')
         except Exception as e:
             logger.warn(f'Loading plugin {d} has failed: {e}')
 
+    # Make function callable from html
+    webapi.jinja_env.globals.update(get_plugin_pages=get_plugin_pages)
+    webapi.jinja_env.globals.update(get_plugins=get_plugins)
+
     return webapi
 
 
+def get_plugin_pages() -> list:
+    plugin_pages.sort(key=sort_pages)
+    return plugin_pages
+
+
+def sort_pages(page: tuple) -> tuple:
+    return page[2], page[0]
+
+
+def get_plugins() -> list:
+    return [(key.capitalize(), plugins[key].description if hasattr(plugins[key], 'description') else "") for key in list(plugins.keys())]
 

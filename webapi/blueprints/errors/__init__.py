@@ -2,10 +2,14 @@ from flask import Blueprint, render_template, request
 from webapi.libs.config import Config
 from webapi.libs.log import Logger
 
-name = 'errors'
-config: Config = None
+bp: Blueprint = None
+name: str = None
 logger: Logger = None
+config: Config = None
 
-bp = Blueprint(name, __name__, template_folder='templates', static_folder='static')
 
-from . import errors
+def set_blueprint(blueprint: Blueprint):
+    global bp
+    bp = blueprint
+
+    from . import errors

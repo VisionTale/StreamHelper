@@ -3,6 +3,6 @@ body {
     color: #1b8fb1;
 }
 
-.navbar {
+.navbar, .jumbotron {
     background-color: #1f202d;
 }
