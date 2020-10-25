@@ -2,6 +2,8 @@ from flask import Blueprint
 from webapi.libs.config import Config
 from webapi.libs.log import Logger
 
+description: str = "Dashboard and other basic framework sites"
+
 bp: Blueprint = None
 name: str = None
 logger: Logger = None

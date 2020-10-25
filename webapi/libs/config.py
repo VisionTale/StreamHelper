@@ -1,4 +1,4 @@
-from os.path import isfile, join
+from os.path import isfile, join, dirname
 from os import getenv, urandom
 from configparser import ConfigParser
 from pathlib import Path
@@ -67,6 +67,19 @@ class Config:
         with open(self._config_fp, 'w') as f:
             self._config.write(f)
 
+    def has(self, app, key) -> bool:
+        """
+        Check if a configuration value for a plugin exists.
+        :param app: the plugins internal name
+        :param key: the key within the application
+        :return: Whether the key exists
+        """
+        if app not in self._config.sections():
+            return False
+        if key in self._config[app].keys():
+            return False
+        return True
+
     def create_section(self, app):
         """
         Create a section for the plugin with the given name if not already existent.
@@ -131,6 +144,18 @@ class Config:
         self.set_if_none('webapi', 'log_level', getenv('SH_LOG_LEVEL') or 'DEBUG')
         self.set_if_none('webapi', 'plugin_path', getenv('SH_PLUGIN_PATH') or join(DATA_DIR, 'blueprints'))
         self.set_if_none('webapi', 'macro_path', getenv('SH_MACRO_PATH') or join(DATA_DIR, 'macros'))
+        self.set('webapi', 'data_dir', DATA_DIR)
+        self.set('webapi', 'config_dir', CONFIG_DIR)
+        self.set('webapi', 'cache_dir', CACHE_DIR)
+        Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
+        Path(CONFIG_DIR).mkdir(parents=True, exist_ok=True)
+        Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
+        Path(self.get('flask', 'template_path')).mkdir(parents=True, exist_ok=True)
+        Path(self.get('flask', 'static_path')).mkdir(parents=True, exist_ok=True)
+        Path(dirname(self.get('flask', 'sqlalchemy_database_uri').split('///')[1])).mkdir(parents=True, exist_ok=True)
+        Path(dirname(self.get('webapi', 'log_fp'))).mkdir(parents=True, exist_ok=True)
+        Path(self.get('webapi', 'plugin_path')).mkdir(parents=True, exist_ok=True)
+        Path(self.get('webapi', 'macro_path')).mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == '__main__':

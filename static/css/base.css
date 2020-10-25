@@ -1,0 +1,11 @@
+body {
+    background-color: #161616 !important;
+    color: #1b8fb1 !important;
+}
+
+.navbar, .jumbotron, .btn, .btn:hover, .card-header, .card-body, .input-group-append, .input-group-text,
+    .custom-file-label, .custom-file-label::after, input {
+    background-color: #1f202d !important;
+    color: #1b8fb1 !important;
+    border-color: #161616 !important;
+}

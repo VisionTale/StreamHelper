@@ -1,4 +1,4 @@
-from flask import Flask, Blueprint
+from flask import Flask, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
@@ -17,13 +17,10 @@ migrate = Migrate()
 login = LoginManager()
 bootstrap = Bootstrap()
 logger: Logger = None
-plugins = dict()
-active_plugins = list()
-plugin_pages = list()
 
 
 def create_app():
-    global logger, plugins
+    global logger
 
     # Initialization
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -49,59 +46,19 @@ def create_app():
     from webapi.modules.models import User
 
     # Load blueprints
-    from os import listdir
-    from os.path import isdir, join
-    from importlib import import_module
-    for d in listdir('webapi/blueprints'):  # TODO config option
-        if not isdir(join('webapi/blueprints', d)) or d == '__pycache__':
-            continue
-        logger.debug(f'Loading plugin {d}')
-        try:
-            plugin = import_module(f'webapi.blueprints.{d}')
-
-            attrs = ['set_blueprint']
-            for attr in attrs:
-                if not hasattr(plugin, attr):
-                    raise AttributeError(f'Plugin {d} misses the attribute {attr}, which is expected by the framework.')
-
-            plugin.name = d
-            plugin.config = config
-            plugin.logger = logger
-            blueprint = Blueprint(
-                d,
-                d,
-                template_folder=f'webapi/blueprints/{d}/templates',
-                static_folder=f'webapi/blueprints/{d}/static',
-                url_prefix=f'/{d}'
-            )
-            plugin.set_blueprint(blueprint)
-            plugins[d] = plugin
-
-            webapi.register_blueprint(blueprint)
-            if hasattr(plugin, 'provides_pages'):
-                for page in plugin.provides_pages:
-                    plugin_pages.append((page[0], f'{plugin.name}.{page[1]}', page[2] if len(page) > 2 else 1000, d))
-
-            logger.debug('Finished')
-        except Exception as e:
-            logger.warn(f'Loading plugin {d} has failed: {e}')
+    from webapi.plugin import load_plugins, get_plugins, get_plugin_pages, get_active_plugins, _activate_plugin
+    load_plugins(webapi, config, logger)
+    _activate_plugin('base', 'errors', 'user')
 
     # Make function callable from html
     webapi.jinja_env.globals.update(get_plugin_pages=get_plugin_pages)
     webapi.jinja_env.globals.update(get_plugins=get_plugins)
+    webapi.jinja_env.globals.update(get_active_plugins=get_active_plugins)
+
+    @webapi.route('/')
+    def index():
+        return redirect(url_for('base.dashboard'))
 
     return webapi
 
-
-def get_plugin_pages() -> list:
-    plugin_pages.sort(key=sort_pages)
-    return plugin_pages
-
-
-def sort_pages(page: tuple) -> tuple:
-    return page[2], page[0]
-
-
-def get_plugins() -> list:
-    return [(key.capitalize(), plugins[key].description if hasattr(plugins[key], 'description') else "") for key in list(plugins.keys())]
 

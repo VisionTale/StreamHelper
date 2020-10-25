@@ -11,11 +11,6 @@ def dashboard():
     return render_template('dashboard.html')
 
 
-@bp.route('/settings', methods=['GET', 'POST'])
-def settings():
-    return "Not yet implemented"
-
-
 @bp.route('/ping')
 def ping():
     return "", 200

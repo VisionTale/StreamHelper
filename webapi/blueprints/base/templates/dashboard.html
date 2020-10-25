@@ -1,20 +1,95 @@
 {% extends "base.html" %}
 
 {% block page_content %}
-    <h1>Hi, {{ current_user.username }}!</h1>
-    {% with plugins = get_plugins() %}
-        {% if plugins %}
-            <div class="card-deck">
-                {% for plugin in plugins %}
-                    <div class="card border-primary mb-3", style="max-width: 40%;">
-                        <div class="card-header">Plugin</div>
-                        <div class="card-body">
-                            <h5 class="card-title">{{ plugin[0] }}</h5>
-                            <p class="card-text">{{ plugin[1] }}</p>
-                        </div>
-                    </div>
-                {% endfor %}
+    <div class="jumbotron">
+        <h1 class="display-4">Hi, {{ current_user.username }}!</h1>
+        <p class="lead">Welcome to the StreamHelper framework. I want to make your straming and broadcasting experience
+            better by giving you a modular, easy to extend and flexible framework. Here you can add and activate
+            plugins. Without plugins, this framework does not much by itself.</p>
+        <hr class="my-4">
+        <form enctype="multipart/form-data" action="{{ url_for('base.install') }}" method="POST">
+            <div class="input-group mb-3">
+                <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="inputGroupFile02" name="plugin" accept="application/zip">
+                    <label class="custom-file-label" for="inputGroupFile02" aria-describedby="inputGroupFileAddon02">Choose file</label>
+                </div>
+                <div class="input-group-append">
+                    <button type="submit" class="btn btn-primary">Upload</button>
+                </div>
             </div>
-        {% endif %}
-    {% endwith %}
+        </form>
+        {% with plugins = get_plugins() %}
+            {% do plugins.sort() %}
+            {% if plugins %}
+                <div class="card-deck">
+                    {% for plugin in plugins %}
+                        <div class="card border-primary mb-3" style="max-width: 18rem;">
+                            <div class="card-header">Plugin</div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ plugin[1] }}</h5>
+                                <p class="card-text">{{ plugin[2] }}</p>
+                                {% if plugin[0] in ['base', 'errors', 'user'] %}
+                                    <a href="#" class="btn btn-primary disabled" tabindex="-1" role="button" aria-disabled="true">Active</a>
+                                {% elif plugin[0] in get_active_plugins() %}
+                                    <a
+                                            href="#"
+                                            class="btn btn-primary"
+                                            onclick="deactivatePlugin('{{ plugin[0] }}', this);"
+                                          role="button"
+                                    >
+                                        Deactivate
+                                    </a>
+                                {% else %}
+                                    <a
+                                            href="#"
+                                            class="btn btn-primary"
+                                            onclick="activatePlugin('{{ plugin[0] }}', this);"
+                                            role="button"
+                                    >
+                                        Activate
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+    </div>
+{% endblock %}
+
+{% block page_scripts %}
+    <script>
+        function activatePlugin (name, button) {
+            $.ajax({
+                url: '{{ url_for('activate_plugin') }}',
+                data: { name: name },
+                type: 'GET'
+            });
+            button.textContent = "Deactivate"
+            button.onclick = () => deactivatePlugin(name, button)
+            createRefreshButton()
+        }
+        function deactivatePlugin (name, button) {
+           $.ajax({
+                url: '{{ url_for('deactivate_plugin') }}',
+                data: { name: name },
+                type: 'GET'
+            });
+            button.textContent = "Activate"
+            button.onclick = () => activatePlugin(name, button)
+            createRefreshButton()
+        }
+        function createRefreshButton() {7
+            if (document.getElementById("refreshButton") != null) {
+                return
+            }
+            let nav = document.getElementsByClassName('nav').item(0)
+            let refreshButton = document.createElement("li")
+            refreshButton.id = "refreshButton"
+            refreshButton.className = "nav-item"
+            refreshButton.innerHTML = "<a class=\"nav-link btn-danger\" onclick=\"location.reload()\">Refresh</a>"
+            nav.appendChild(refreshButton)
+        }
+    </script>
 {% endblock %}
