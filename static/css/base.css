@@ -4,8 +4,13 @@ body {
 }
 
 .navbar, .jumbotron, .btn, .btn:hover, .card-header, .card-body, .input-group-append, .input-group-text,
-    .custom-file-label, .custom-file-label::after, input {
+    .custom-file-label, .custom-file-label::after, input, img {
     background-color: #1f202d !important;
     color: #1b8fb1 !important;
     border-color: #161616 !important;
+}
+
+.card-img, .card-img-top {
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
 }
