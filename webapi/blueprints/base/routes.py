@@ -20,7 +20,7 @@ def extract_blueprint_zip(filepath, delete=False):
         filename_without_ext = '.'.join(basename(filepath).split('.')[:-1])
         files = [f.filename for f in zip_file.filelist]
         for f in files:
-            # TODO Check if separator differs fpr Windows implementation of zipfile
+            # TODO Check if separator differs for Windows implementation of zipfile
             if not f.startswith(f'{filename_without_ext}/'):
                 extract_filepath = join(extract_filepath, f'{filename_without_ext}')
                 break

@@ -124,6 +124,8 @@ class Config:
         - SH_LOG_LEVEL : Log level. Supported are CRITICAL, ERROR, WARNING, INFO, DEBUG, NOTSET. Defaults to DEBUG.
         - SH_PLUGIN_PATH : Directory containing all plugins as folders. Defaults to $SH_DATA_DIR/blueprints.
         - SH_MACRO_PATH : Directory containing all macros as folders. Defaults to $SH_DATA_DIR/macros.
+        - SH_MEDIA_PATH : Directory containing all media files. Defaults to $SH_DATA_DIR/media.
+        - SH_THUMBNAIL_PATH : Directory containing all thumbnails. Defaults to $SH_CACHE_DIR/thumbnails.
         """
 
         from os.path import isdir, dirname
@@ -144,6 +146,8 @@ class Config:
         self.set_if_none('webapi', 'log_level', getenv('SH_LOG_LEVEL') or 'DEBUG')
         self.set_if_none('webapi', 'plugin_path', getenv('SH_PLUGIN_PATH') or join(DATA_DIR, 'blueprints'))
         self.set_if_none('webapi', 'macro_path', getenv('SH_MACRO_PATH') or join(DATA_DIR, 'macros'))
+        self.set_if_none('webapi', 'media_path', getenv('SH_MEDIA_PATH') or join(DATA_DIR, 'media'))
+        self.set_if_none('webapi', 'thumbnail_path', getenv('SH_THUMBNAIL_PATH') or join(CACHE_DIR, 'thumbnails'))
         self.set('webapi', 'data_dir', DATA_DIR)
         self.set('webapi', 'config_dir', CONFIG_DIR)
         self.set('webapi', 'cache_dir', CACHE_DIR)
@@ -156,6 +160,8 @@ class Config:
         Path(dirname(self.get('webapi', 'log_fp'))).mkdir(parents=True, exist_ok=True)
         Path(self.get('webapi', 'plugin_path')).mkdir(parents=True, exist_ok=True)
         Path(self.get('webapi', 'macro_path')).mkdir(parents=True, exist_ok=True)
+        Path(self.get('webapi', 'media_path')).mkdir(parents=True, exist_ok=True)
+        Path(self.get('webapi', 'thumbnail_path')).mkdir(parents=True, exist_ok=True)
 
 
 if __name__ == '__main__':
