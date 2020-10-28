@@ -4,9 +4,9 @@ from configparser import ConfigParser
 from pathlib import Path
 
 HOME_DIR = str(Path.home())
-CACHE_DIR = getenv('SH_CACHE_DIR') or join(HOME_DIR, '.cache', 'visiontale', 'streamhelper')
-CONFIG_DIR = getenv('SH_CONFIG_DIR') or join(HOME_DIR, '.config', 'visiontale', 'streamhelper')
-DATA_DIR = getenv('SH_DATA_DIR') or join(HOME_DIR, '.local', 'share', 'visiontale', 'streamhelper')
+CACHE_DIR = getenv('SH_CACHE_DIR') or join(HOME_DIR, '.cache', 'streamhelper')
+CONFIG_DIR = getenv('SH_CONFIG_DIR') or join(HOME_DIR, '.config', 'streamhelper')
+DATA_DIR = getenv('SH_DATA_DIR') or join(HOME_DIR, '.local', 'share', 'streamhelper')
 
 
 class Config:
@@ -18,7 +18,7 @@ class Config:
 
         Environment variables:
             - SH_CONFIG_DIR : Fallback directory for configuration files. Defaults to
-                $HOME/.config/visiontale/streamhelper
+                $HOME/.config/streamhelper
             - SH_CONFIG_FP : Filepath to store the configuration. Defaults to $SH_CONFIG_DIR/config.ini
 
         To change individual config options, see Config::update_config.
@@ -104,11 +104,11 @@ class Config:
 
         Environment variables:
         - SH_CONFIG_DIR : Fallback directory for configuration files. Defaults to
-                $HOME/.config/visiontale/streamhelper
+                $HOME/.config/streamhelper
         - SH_CACHE_DIR : Fallback directory for non permanent files (e.g. logs). Defaults to
-                $HOME/.cache/visiontale/streamhelper
+                $HOME/.cache/streamhelper
         - SH_DATA_DIR : Fallback directory for additional files (templates, plugins, etc.). Defaults to
-                $HOME/.local/share/visiontale/streamhelper
+                $HOME/.local/share/streamhelper
         - SECRET_KEY : Secret key for security of flask. Never publish your production key! Will be randomly generated
             otherwise
         - TEMPLATES_AUTO_RELOAD : Whether to reload templates on change. Defaults to true.
