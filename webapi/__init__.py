@@ -72,10 +72,15 @@ def create_app():
     # Make sure the main components are always activated
     _activate_plugin('base', 'errors', 'user')
 
+    # Load macros
+    from webapi.macro import load_macros, get_macros
+    load_macros(webapi, config, logger)
+
     # Make function callable from jinja templates
     expose_function_for_templates(get_plugin_pages=get_plugin_pages)
     expose_function_for_templates(get_plugins=get_plugins)
     expose_function_for_templates(get_active_plugins=get_active_plugins)
+    expose_function_for_templates(get_macros=get_macros)
 
     # Create a basic redirect to the base plugin
     @webapi.route('/')

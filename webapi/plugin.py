@@ -1,12 +1,17 @@
-from flask import Blueprint, request
+from shutil import rmtree
+from os.path import isdir, join
+
+from flask import Blueprint, request, flash
+
 from webapi.libs.config import Config
 from webapi.libs.log import Logger
+from webapi.libs.api.response import redirect_or_response
 
 plugins = dict()
 active_plugins = list()
 plugin_pages = list()
 c: Config = None
-
+l: Logger = None
 
 def get_plugin_pages() -> list:
     plugin_pages.sort(key=sort_pages)
@@ -57,9 +62,22 @@ def _deactivate_plugin(*names: str):
     _save_activated_plugins()
 
 
+def _remove_plugin(*names: str):
+    for name in names:
+        if name in active_plugins:
+            active_plugins.remove(name)
+        if name in plugins:
+            del plugins[name]
+        blueprint_path = c.get('webapi', 'plugin_path')
+        if isdir(join(blueprint_path, name)):
+            l.warning(f"Removing plugin {name}")
+            rmtree(join(blueprint_path, name))
+
+
 def load_plugins(webapi, config: Config, logger: Logger) -> dict:
-    global c
+    global c, l
     c = config
+    l = logger
 
     from os import listdir
     from os.path import isdir, join
@@ -99,6 +117,10 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
                 for page in plugin.provides_pages:
                     plugin_pages.append((page[0], f'{plugin.name}.{page[1]}', page[2] if len(page) > 2 else 1000, d))
 
+            if hasattr(plugin, 'post_loading_actions'):
+                logger.debug('Running post loading actions')
+                plugin.post_loading_actions()
+
             logger.debug('Finished')
         except Exception as e:
             logger.warning(f'Loading plugin {d} has failed: {e}')
@@ -111,20 +133,51 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
 
     @webapi.route('/activate_plugin')
     def activate_plugin():
-        if 'name' not in request.args:
-            return "Missing parameter name", 400
+        """
+        Activates a plugin. At the time, activation and deactivation of plugins only affects the active_plugin() method
+        used by the frontend, and does not unload the plugin. TODO Real load/unload
+        :return: redirect if redirect_url was passed, otherwise response
+        """
+        redirect_url = request.args.get('redirect_url')
         name = request.args.get('name')
-        if name == '':
-            return "Missing parameter name", 400
+
+        if not name or name == '':
+            flash('Missing parameter name')
+            return redirect_or_response(request, 400, redirect_url, 'Missing parameter name')
+
         _activate_plugin(name)
-        return "Success", 200
+        return redirect_or_response(request, 200, redirect_url, 'Success')
 
     @webapi.route('/deactivate_plugin')
     def deactivate_plugin():
-        if 'name' not in request.args:
-            return "Missing parameter name", 400
+        """
+        Deactivates a plugin. At the time, activation and deactivation of plugins only affects the active_plugin()
+        method used by the frontend, and does not unload the plugin. TODO Real load/unload
+        :return: redirect if redirect_url was passed, otherwise response
+        """
+        redirect_url = request.args.get('redirect_url')
         name = request.args.get('name')
-        if name == '':
-            return "Missing parameter name", 400
+
+        if not name or name == '':
+            flash('Missing parameter name')
+            return redirect_or_response(request, 400, redirect_url, 'Missing parameter name')
+
         _deactivate_plugin(name)
-        return "Success", 200
+        return redirect_or_response(request, 200, redirect_url, 'Success')
+
+    @webapi.route('/remove_plugin')
+    def remove_plugin():
+        """
+        Removes a plugin completely. If flask does not auto reload, the application may need to be restartet for the
+        changes to take effect.
+        :return: redirect if redirect_url was passed, otherwise response
+        """
+        redirect_url = request.args.get('redirect_url')
+        name = request.args.get('name')
+
+        if not name or name == '':
+            flash('Missing parameter name')
+            return redirect_or_response(request, 400, redirect_url, 'Missing parameter name')
+
+        _remove_plugin(name)
+        return redirect_or_response(request, 200, redirect_url, 'Success')

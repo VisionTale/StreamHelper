@@ -18,10 +18,10 @@
                 </div>
             </div>
         </form>
-        {% with plugins = get_plugins() %}
-            {% do plugins.sort() %}
-            {% if plugins %}
-                <div class="card-deck">
+        <div class="card-deck">
+            {% with plugins = get_plugins() %}
+                {% do plugins.sort() %}
+                {% if plugins %}
                     {% for plugin in plugins %}
                         <div class="card border-primary mb-3" style="max-width: 18rem;">
                             <div class="card-header">Plugin</div>
@@ -32,23 +32,42 @@
                                     <a href="#" class="btn btn-primary disabled" tabindex="-1" role="button" aria-disabled="true">Active</a>
                                 {% elif plugin[0] in get_active_plugins() %}
                                     <a
-                                            href="#"
-                                            class="btn btn-primary"
-                                            onclick="deactivatePlugin('{{ plugin[0] }}', this);"
-                                          role="button"
+                                        href="{{ url_for('deactivate_plugin') }}?name={{ plugin[0] }}&redirect_url={{ url_for('base.dashboard') }}"
+                                        class="btn btn-primary"
+                                        role="button"
                                     >
                                         Deactivate
                                     </a>
                                 {% else %}
                                     <a
-                                            href="#"
-                                            class="btn btn-primary"
-                                            onclick="activatePlugin('{{ plugin[0] }}', this);"
-                                            role="button"
+                                        href="{{ url_for('activate_plugin') }}?name={{ plugin[0] }}&redirect_url={{ url_for('base.dashboard') }}"
+                                        class="btn btn-primary"
+                                        role="button"
                                     >
                                         Activate
                                     </a>
                                 {% endif %}
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            {% with macros = get_macros() %}
+                {% do macros.sort() %}
+                {% if macros %}
+                    {% for macro in macros %}
+                        <div class="card border-primary mb-3" style="max-width: 18rem;">
+                            <div class="card-header">Macro</div>
+                            <div class="card-body">
+                                <h5 class="card-title">{{ macro[1] }}</h5>
+                                <p class="card-text">{{ macro[2] }}</p>
+                                <a
+                                    href=""
+                                    class="btn btn-primary"
+                                    role="button"
+                                >
+                                Activate
+                                </a>
                             </div>
                         </div>
                     {% endfor %}
@@ -80,7 +99,7 @@
             button.onclick = () => activatePlugin(name, button)
             createRefreshButton()
         }
-        function createRefreshButton() {7
+        function createRefreshButton() {
             if (document.getElementById("refreshButton") != null) {
                 return
             }
