@@ -10,7 +10,7 @@ def sort_pages(page: tuple) -> tuple:
     return page[2], page[0]
 
 
-def get_macros() -> list:
+def get_macros_jinja() -> list:
     return [
         (
             key,
@@ -19,6 +19,10 @@ def get_macros() -> list:
         )
         for key in list(macros.keys())
     ]
+
+
+def get_macros() -> dict:
+    return macros
 
 
 def load_macros(webapi, config: Config, logger: Logger) -> dict:

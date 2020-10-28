@@ -13,6 +13,7 @@ plugin_pages = list()
 c: Config = None
 l: Logger = None
 
+
 def get_plugin_pages() -> list:
     plugin_pages.sort(key=sort_pages)
     active_plugin_pages = [e for e in plugin_pages if e[3] in active_plugins]
@@ -27,7 +28,7 @@ def sort_pages(page: tuple) -> tuple:
     return page[2], page[0]
 
 
-def get_plugins() -> list:
+def get_plugins_jinja() -> list:
     return [
         (
             key,
@@ -36,6 +37,10 @@ def get_plugins() -> list:
         )
         for key in list(plugins.keys())
     ]
+
+
+def get_plugins() -> dict:
+    return plugins
 
 
 def _load_activated_plugins():

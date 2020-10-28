@@ -67,20 +67,30 @@ def create_app():
     from webapi.modules.models import User
 
     # Load blueprints
-    from webapi.plugin import load_plugins, get_plugins, get_plugin_pages, get_active_plugins, _activate_plugin
+    from webapi.plugin import load_plugins, get_plugins, get_plugin_pages, get_active_plugins, _activate_plugin, \
+        get_plugins_jinja
     load_plugins(webapi, config, logger)
     # Make sure the main components are always activated
     _activate_plugin('base', 'errors', 'user')
 
     # Load macros
-    from webapi.macro import load_macros, get_macros
+    from webapi.macro import load_macros, get_macros, get_macros_jinja
     load_macros(webapi, config, logger)
+
+    # Provide plugins with macros
+    for plugin in get_plugins().values():
+        if hasattr(plugin, 'request_macros'):
+            add_macros = list()
+            for macro in plugin.request_macros:
+                if macro in get_macros():
+                    add_macros.append(get_macros()[macro])
+            plugin.macros = add_macros
 
     # Make function callable from jinja templates
     expose_function_for_templates(get_plugin_pages=get_plugin_pages)
-    expose_function_for_templates(get_plugins=get_plugins)
+    expose_function_for_templates(get_plugins=get_plugins_jinja)
     expose_function_for_templates(get_active_plugins=get_active_plugins)
-    expose_function_for_templates(get_macros=get_macros)
+    expose_function_for_templates(get_macros=get_macros_jinja)
 
     # Create a basic redirect to the base plugin
     @webapi.route('/')
