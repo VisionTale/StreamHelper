@@ -87,10 +87,9 @@ def create_app():
             plugin.macros = add_macros
 
     # Make function callable from jinja templates
-    expose_function_for_templates(get_plugin_pages=get_plugin_pages)
-    expose_function_for_templates(get_plugins=get_plugins_jinja)
-    expose_function_for_templates(get_active_plugins=get_active_plugins)
-    expose_function_for_templates(get_macros=get_macros_jinja)
+    expose_function_for_templates(get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
+                                  get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
+                                  get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version)
 
     # Create a basic redirect to the base plugin
     @webapi.route('/')
@@ -128,8 +127,8 @@ def download_bootstrap(static_dir, version):
     """
     from os.path import isdir, join
 
-    bootstrap_dir = join(static_dir, 'bootstrap')
-    if not isdir(bootstrap_dir) or not isdir(join(bootstrap_dir, f'bootstrap-{version}-dist')):
+    bootstrap_dir = join(static_dir, f'bootstrap-{version}-dist')
+    if not isdir(bootstrap_dir):
         print("Downloading bootstrap files..")
         import requests
 
@@ -141,7 +140,7 @@ def download_bootstrap(static_dir, version):
         from zipfile import ZipFile
         print("Unzipping..")
         with ZipFile(zip_file_fp, 'r') as zip_file:
-            zip_file.extractall(bootstrap_dir)
+            zip_file.extractall(static_dir)
         from os import remove
         remove(zip_file_fp)
         print("Done!")
@@ -178,3 +177,11 @@ def download_jquery(static_dir, version):
 
         with open(map_fp, 'wb') as f:
             f.write(map_request.content)
+
+
+def get_bootstrap_version():
+    return bootstrap_version
+
+
+def get_jquery_version():
+    return jquery_version
