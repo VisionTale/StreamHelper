@@ -14,6 +14,8 @@ from webapi.libs.log import setup_webapi as setup, Logger
 config = Config()
 template_folder = config.get('flask', 'template_path')
 static_folder = config.get('flask', 'static_path')
+bootstrap_version = config.get('webapi', 'bootstrap_version')
+jquery_version = config.get('webapi', 'jquery_version')
 
 # Pre-init flask extensions
 db = SQLAlchemy()
@@ -31,6 +33,12 @@ def create_app():
     :return: the flask application object
     """
     global logger, jinja_env
+
+    # Ensure bootstrap is available
+    download_bootstrap(static_folder, bootstrap_version)
+
+    # Ensure jquery is available
+    download_jquery(static_folder, jquery_version)
 
     # Initialization of the flask application
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -88,6 +96,70 @@ def create_app():
 
 
 def expose_function_for_templates(**kwargs):
+    """
+    Make a passed function callable from jinja framework.
+    :param kwargs: keyword=func pairs, will be callable by the given keyword
+    :return:
+    """
     jinja_env.globals.update(**kwargs)
 
 
+def download_bootstrap(static_dir, version):
+    """
+    Downloads the bootstrap dist files.
+    :param static_dir: global static dir
+    :param version: bootstrap version
+    :return:
+    """
+    from os.path import isdir, join
+
+    bootstrap_dir = join(static_dir, 'bootstrap')
+    if not isdir(bootstrap_dir) or not isdir(join(bootstrap_dir, f'bootstrap-{version}-dist')):
+        print("Downloading bootstrap files..")
+        import requests
+
+        url = f'https://github.com/twbs/bootstrap/releases/download/v{version}/bootstrap-{version}-dist.zip'
+        zip_file_fp = join(static_dir, 'bootstrap.zip')
+        r = requests.get(url)
+        with open(zip_file_fp, 'wb') as f:
+            f.write(r.content)
+        from zipfile import ZipFile
+        print("Unzipping..")
+        with ZipFile(zip_file_fp, 'r') as zip_file:
+            zip_file.extractall(bootstrap_dir)
+        from os import remove
+        remove(zip_file_fp)
+        print("Done!")
+
+
+def download_jquery(static_dir, version):
+    """
+    Downloads the jquery javascript and map file.
+    :param static_dir: global static dir
+    :param version: jquery version
+    :return:
+    """
+    from os.path import isdir, isfile, join
+
+    jquery_dir = join(static_dir, 'jquery')
+    if not isdir(jquery_dir) or not isfile(join(jquery_dir, f'jquery-{version}.min.js')):
+        print("Downloading jquery files..")
+        import requests
+
+        from os import mkdir
+        mkdir(jquery_dir)
+
+        js_url = f'https://code.jquery.com/jquery-{version}.min.js'
+        map_url = f'https://code.jquery.com/jquery-{version}.min.map'
+
+        js_request = requests.get(js_url)
+        map_request = requests.get(map_url)
+
+        js_fp = join(jquery_dir, f'jquery-{version}.min.js')
+        map_fp = join(jquery_dir, f'jquery-{version}.min.map')
+
+        with open(js_fp, 'wb') as f:
+            f.write(js_request.content)
+
+        with open(map_fp, 'wb') as f:
+            f.write(map_request.content)

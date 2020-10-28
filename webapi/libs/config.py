@@ -126,6 +126,8 @@ class Config:
         - SH_MACRO_PATH : Directory containing all macros as folders. Defaults to $SH_DATA_DIR/macros.
         - SH_MEDIA_PATH : Directory containing all media files. Defaults to $SH_DATA_DIR/media.
         - SH_THUMBNAIL_PATH : Directory containing all thumbnails. Defaults to $SH_CACHE_DIR/thumbnails.
+        - SH_BOOTSTRAP_VERSION : Version of bootstrap to use. Defaults to 4.5.3
+        - SH_JQUERY_VERSION : Version of jquery to use. Defaults to 3.5.
         """
 
         from os.path import isdir, dirname
@@ -148,6 +150,8 @@ class Config:
         self.set_if_none('webapi', 'macro_path', getenv('SH_MACRO_PATH') or join(DATA_DIR, 'macros'))
         self.set_if_none('webapi', 'media_path', getenv('SH_MEDIA_PATH') or join(DATA_DIR, 'media'))
         self.set_if_none('webapi', 'thumbnail_path', getenv('SH_THUMBNAIL_PATH') or join(CACHE_DIR, 'thumbnails'))
+        self.set_if_none('webapi', 'bootstrap_version', getenv('SH_BOOTSTRAP_VERSION') or '4.5.3')
+        self.set_if_none('webapi', 'jquery_version', getenv('SH_JQUERY_VERSION') or '3.5.1')
         self.set('webapi', 'data_dir', DATA_DIR)
         self.set('webapi', 'config_dir', CONFIG_DIR)
         self.set('webapi', 'cache_dir', CACHE_DIR)
