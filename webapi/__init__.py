@@ -79,12 +79,12 @@ def create_app():
 
     # Provide plugins with macros
     for plugin in get_plugins().values():
+        add_macros = {'config': Config, 'logger': Logger}
         if hasattr(plugin, 'request_macros'):
-            add_macros = list()
             for macro in plugin.request_macros:
                 if macro in get_macros():
-                    add_macros.append(get_macros()[macro])
-            plugin.macros = add_macros
+                    add_macros[macro] = get_macros()[macro]
+        plugin.macros = add_macros
 
     # Make function callable from jinja templates
     expose_function_for_templates(get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,

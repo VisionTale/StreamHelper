@@ -95,32 +95,43 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
     for d in listdir(blueprint_path):
         if not isdir(join(blueprint_path, d)) or d == '__pycache__':
             continue
-        logger.debug(f'Loading plugin {d}')
+        d_name = d.lower()
+        if d_name.startswith('streamhelper-'):
+            d_name = d_name[13:]
+        logger.debug(f'Loading plugin {d_name}')
         try:
             plugin = import_module(f'{d}')
 
             attrs = ['set_blueprint']
             for attr in attrs:
                 if not hasattr(plugin, attr):
-                    raise AttributeError(f'Plugin {d} misses the attribute {attr}, which is expected by the framework.')
+                    raise AttributeError(f'Plugin {d_name} misses the attribute {attr}, which is expected by the '
+                                         f'framework.')
 
-            plugin.name = d
+            plugin.name = d_name
             plugin.config = config
             plugin.logger = logger
             blueprint = Blueprint(
-                d,
-                d,
+                d_name,
+                d_name,
                 template_folder=join(blueprint_path, d, 'templates'),
                 static_folder=join(blueprint_path, d, 'static'),
-                url_prefix=f'/{d}'
+                url_prefix=f'/{d_name}'
             )
             plugin.set_blueprint(blueprint)
-            plugins[d] = plugin
+            plugins[d_name] = plugin
 
             webapi.register_blueprint(blueprint)
             if hasattr(plugin, 'provides_pages'):
                 for page in plugin.provides_pages:
-                    plugin_pages.append((page[0], f'{plugin.name}.{page[1]}', page[2] if len(page) > 2 else 1000, d))
+                    plugin_pages.append(
+                        (
+                            page[0],
+                            f'{plugin.name}.{page[1]}',
+                            page[2] if len(page) > 2 else 1000,
+                            d_name
+                        )
+                    )
 
             if hasattr(plugin, 'post_loading_actions'):
                 logger.debug('Running post loading actions')
@@ -128,7 +139,7 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
 
             logger.debug('Finished')
         except Exception as e:
-            logger.warning(f'Loading plugin {d} has failed: {e}')
+            logger.warning(f'Loading plugin {d_name} has failed: {e}')
 
     # Load active plugin list and remove unavailable plugins
     _load_activated_plugins()

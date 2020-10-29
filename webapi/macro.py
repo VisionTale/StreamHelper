@@ -40,19 +40,23 @@ def load_macros(webapi, config: Config, logger: Logger) -> dict:
     for d in listdir(macro_path):
         if not isdir(join(macro_path, d)) or d == '__pycache__':
             continue
-        logger.debug(f'Loading macros {d}')
+        d_name = d.lower()
+        if d_name.startswith('streamhelper-'):
+            d_name = d_name[13:]
+        logger.debug(f'Loading macros {d_name}')
         try:
             macro = import_module(f'{d}')
 
             attrs = []
             for attr in attrs:
                 if not hasattr(macro, attr):
-                    raise AttributeError(f'Plugin {d} misses the attribute {attr}, which is expected by the framework.')
+                    raise AttributeError(f'Plugin {d_name} misses the attribute {attr}, which is expected by the '
+                                         f'framework.')
 
-            macro.name = d
+            macro.name = d_name
             macro.config = config
             macro.logger = logger
-            macros[d] = macro
+            macros[d_name] = macro
 
             if hasattr(macro, 'post_loading_actions'):
                 logger.debug('Running post loading actions')
@@ -60,4 +64,4 @@ def load_macros(webapi, config: Config, logger: Logger) -> dict:
 
             logger.debug('Finished')
         except Exception as e:
-            logger.warning(f'Loading plugin {d} has failed: {e}')
+            logger.warning(f'Loading plugin {d_name} has failed: {e}')

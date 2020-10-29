@@ -17,13 +17,19 @@ def allowed_file(filename):
 def extract_blueprint_zip(filepath, delete=False):
     with ZipFile(filepath, 'r') as zip_file:
         extract_filepath = dirname(filepath)
-        filename_without_ext = '.'.join(basename(filepath).split('.')[:-1])
-        files = [f.filename for f in zip_file.filelist]
-        for f in files:
-            # TODO Check if separator differs for Windows implementation of zipfile
-            if not f.startswith(f'{filename_without_ext}/'):
-                extract_filepath = join(extract_filepath, f'{filename_without_ext}')
-                break
+        filename_without_ext = '.'.join(basename(filepath).split('.')[:-1]).lower()
+        files = [f.filename.lower() for f in zip_file.filelist]
+        # Ensuring files will not be packed out without a directory
+        if '/' not in files[0]:
+            extract_filepath = join(extract_filepath, f'{filename_without_ext}')
+        else:
+            prefix = files[0].split('/')[0]
+            for f in files:
+                # TODO Check if separator within zip differs for Windows implementation of zipfile
+                if not f.startswith(f'{prefix}/'):
+                    extract_filepath = join(extract_filepath, f'{filename_without_ext}')
+                    break
+        # TODO Delete old version
         zip_file.extractall(extract_filepath)
     if delete:
         remove(filepath)

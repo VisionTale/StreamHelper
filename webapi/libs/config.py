@@ -48,6 +48,8 @@ class Config:
         :param key: the key within the application
         :param value: the value to set
         """
+        if app not in self._config.sections():
+            self.create_section(app)
         self._config[app][key] = value
         with open(self._config_fp, 'w') as f:
             self._config.write(f)
