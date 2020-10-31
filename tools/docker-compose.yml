@@ -47,7 +47,7 @@ services:
       - "../static:/srv/data/static:ro"
       - "../webapi/blueprints:/srv/data/blueprints:ro"
       - "../webapi/macros:/srv/data/macros:ro"
-      - "../.python3.9:/usr/local/lib/python3.9"
+      - "../.python3.9:/usr/local/lib/python3.9/site-packages"
     ports:
       - "5000:5000"
     networks:
