@@ -61,9 +61,8 @@ COPY ../webapi/blueprints "$SH_PLUGIN_PATH/"
 COPY ../webapi/macros "$SH_MACRO_PATH/"
 
 RUN python3 -m pip install --upgrade pip
-RUN python3 -m pip install -r requirements.txt
-RUN for file in $(ls "$SH_PLUGIN_PATH"/**/requirements.txt); do python3 -m pip install -r "$file"; done
-RUN for file in $(ls "$SH_MACRO_PATH"/**/requirements.txt); do python3 -m pip install -r "$file"; done
+VOLUME "$BASEDIR"/venv
+RUN python3 -m venv "$BASEDIR"/venv
 
 RUN python3 "$WORKDIR/webapi/libs/config.py"
 
@@ -71,7 +70,7 @@ EXPOSE $PORT
 
 VOLUME $SH_CONFIG_DIR
 
-ENTRYPOINT ['/usr/bin/python3', 'webapi.py']
+ENTRYPOINT ["/bin/sh", "start.sh"]
 
 HEALTHCHECK --interval=5m --timeout=15s \
   CMD python3 "$WORKDIR/tools/healthcheck.py" || exit 1

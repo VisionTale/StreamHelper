@@ -1,17 +1,10 @@
 #!/bin/sh
 
-python3 webapi/libs/config.py
+if [ ! -f /srv/venv/bin/activate ]; then
+  python3 -m pip install --upgrade venv
+	python3 -m venv /srv/venv
+fi
 
-python3 -m pip install --upgrade pip
-python3 -m pip install -r requirements.txt
-for file in "$SH_PLUGIN_PATH"/**/requirements.txt; do
-  [ -e "$file" ] || break
-  python3 -m pip install -r "$file";
-done
-for file in "$SH_MACRO_PATH"/**/requirements.txt; do
-  [ -e "$file" ] || break
-  python3 -m pip install -r "$file";
-done
+. /srv/venv/bin/activate
 
-flask db upgrade
-flask run
+python3 webapi.py

@@ -49,6 +49,10 @@ export FLASK_RUN_PORT = $PORT\n\
 "\
 >> "$WORKDIR/.flaskenv"
 
+RUN python3 -m pip install --upgrade pip
+VOLUME "$BASEDIR"/venv
+RUN python3 -m venv "$BASEDIR"/venv
+
 EXPOSE $PORT
 
 VOLUME $SH_CONFIG_DIR
