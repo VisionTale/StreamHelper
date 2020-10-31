@@ -37,6 +37,7 @@ services:
       - SH_LOG_LEVEL=WARNING
     volumes:
       - "../config:/srv/config"
+      - "../cache:/srv/cache"
       - "../webapi:/srv/app/webapi:ro"
       - "../webapi.py:/srv/app/webapi.py:ro"
       - "../start.sh:/srv/app/start.sh:ro"
@@ -47,6 +48,7 @@ services:
       - "../static:/srv/data/static"
       - "../webapi/blueprints:/srv/data/blueprints"
       - "../webapi/macros:/srv/data/macros"
+      - "../media:/srv/media"
       - "../.python3.9:/usr/local/lib/python3.9/site-packages"
     ports:
       - "5000:5000"
