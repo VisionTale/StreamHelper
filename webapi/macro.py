@@ -58,10 +58,6 @@ def load_macros(webapi, config: Config, logger: Logger) -> dict:
             macro.logger = logger
             macros[d_name] = macro
 
-            if hasattr(macro, 'post_loading_actions'):
-                logger.debug('Running post loading actions')
-                macro.post_loading_actions()
-
             logger.debug('Finished')
         except Exception as e:
             logger.warning(f'Loading plugin {d_name} has failed: {e}')

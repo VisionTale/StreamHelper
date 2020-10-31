@@ -133,10 +133,6 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
                         )
                     )
 
-            if hasattr(plugin, 'post_loading_actions'):
-                logger.debug('Running post loading actions')
-                plugin.post_loading_actions()
-
             logger.debug('Finished')
         except Exception as e:
             logger.warning(f'Loading plugin {d_name} has failed: {e}')

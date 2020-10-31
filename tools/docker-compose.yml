@@ -6,8 +6,8 @@ services:
       dockerfile: tools/Dockerfile.dev
       args:
         - PORT=5000
-        - DEBUG=1
-        - MODE=development
+        - DEBUG=0
+        - MODE=production
         - BASEDIR=/srv
         - WORKDIR=/srv/app
         - SH_CONFIG_DIR=/srv/config

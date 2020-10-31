@@ -71,7 +71,7 @@ EXPOSE $PORT
 
 VOLUME $SH_CONFIG_DIR
 
-ENTRYPOINT ['/bin/sh', 'start.sh']
+ENTRYPOINT ['/usr/bin/python3', 'webapi.py']
 
 HEALTHCHECK --interval=5m --timeout=15s \
   CMD python3 "$WORKDIR/tools/healthcheck.py" || exit 1

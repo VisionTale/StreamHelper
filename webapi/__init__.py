@@ -91,6 +91,12 @@ def create_app():
                                   get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
                                   get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version)
 
+    # Run post load actions
+    for plugin in get_plugins().values():
+        if hasattr(plugin, 'post_loading_actions'):
+            logger.debug(f'Running post loading actions for {plugin.name}')
+            plugin.post_loading_actions()
+
     # Create a basic redirect to the base plugin
     @webapi.route('/')
     @webapi.route('/dashboard')
