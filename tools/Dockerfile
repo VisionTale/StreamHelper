@@ -60,9 +60,8 @@ COPY ../static "$SH_STATIC_PATH/"
 COPY ../webapi/blueprints "$SH_PLUGIN_PATH/"
 COPY ../webapi/macros "$SH_MACRO_PATH/"
 
-RUN python3 -m pip install --upgrade pip
+RUN python3 -m pip install --upgrade pip wheel venv
 VOLUME "$BASEDIR"/venv
-RUN python3 -m venv "$BASEDIR"/venv
 
 RUN python3 "$WORKDIR/webapi/libs/config.py"
 

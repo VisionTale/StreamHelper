@@ -2,25 +2,27 @@
 
 
 if __name__ == "__main__":
+    from sys import path
+    path.append('webapi')
 
     # Load .flaskenv
     from os.path import isfile
     if isfile('.flaskenv'):
-        from webapi.libs.system import load_export_file
+        from libs.system import load_export_file
         load_export_file('.flaskenv')
 
     # Pre-load config
-    from webapi.libs.config import Config
+    from libs.config import Config
     config = Config()
 
     # Install python packages
-    from webapi.libs.network import is_up
+    from libs.network import is_up
     if is_up("8.8.8.8") or is_up("1.1.1.1"):
         from sys import executable
         from subprocess import check_call
         from os import listdir
         from os.path import isfile, join
-        check_call([executable, '-m', 'pip', 'install', '--upgrade', 'pip'])
+        check_call([executable, '-m', 'pip', 'install', '--upgrade', 'pip', 'wheel'])
         check_call([executable, '-m', 'pip', 'install', '--upgrade', '-r', 'requirements.txt'])
         blueprint_path = config.get('webapi', 'plugin_path')
         for blueprint in listdir(blueprint_path):
@@ -37,8 +39,6 @@ if __name__ == "__main__":
 
     # Initialize db
     from os.path import isfile
-    if not isfile(config.get('flask', 'sqlalchemy_database_uri').split('///')[1]):
-        check_call(['flask', 'init-db'])
     check_call(['flask', 'db', 'upgrade'])
 
     # Create application
