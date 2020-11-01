@@ -1,3 +1,6 @@
+from typing import Tuple, List, Dict
+from types import ModuleType
+
 from shutil import rmtree
 from os.path import isdir, join
 
@@ -7,53 +10,87 @@ from webapi.libs.config import Config
 from webapi.libs.log import Logger
 from webapi.libs.api.response import redirect_or_response
 
-plugins = dict()
-active_plugins = list()
-plugin_pages = list()
+Plugins = Dict[str, ModuleType]
+PluginPage = Tuple[str, str, int, str]
+PluginPages = List[PluginPage]
+
+plugins: Plugins = dict()
+active_plugins: List[str] = list()
+plugin_pages: PluginPages = list()
 c: Config = None
 l: Logger = None
 
 
-def get_plugin_pages() -> list:
+def get_plugin_pages() -> PluginPages:
+    """
+    Returns all pages from plugins that are currently active as sorted list.
+    :return: list of pages
+    """
     plugin_pages.sort(key=sort_pages)
-    active_plugin_pages = [e for e in plugin_pages if e[3] in active_plugins]
+    active_plugin_pages = [e for e in plugin_pages if e[3] in get_active_plugins()]
     return active_plugin_pages
 
 
-def get_active_plugins() -> list:
+def get_active_plugins() -> List[str]:
+    """
+    Returns a list of names of active plugins.
+    :return: list of names
+    """
     return active_plugins
 
 
-def sort_pages(page: tuple) -> tuple:
+def sort_pages(page: PluginPage) -> Tuple[int, str]:
+    """
+    Sort key. First the numeric priority value is used to sort, afterwards the name.
+    :param page: a single page
+    :return: the two values by order
+    """
     return page[2], page[0]
 
 
-def get_plugins_jinja() -> list:
+def get_plugins_jinja() -> List[Tuple[str, str]]:
+    """
+    Returns a list containing of tuples, every tuple contains the lowercase name and the description
+    :return: the list of plugins
+    """
     return [
         (
             key,
-            key.capitalize(),
             plugins[key].description if hasattr(plugins[key], 'description') else ""
         )
         for key in list(plugins.keys())
     ]
 
 
-def get_plugins() -> dict:
+def get_plugins() -> Plugins:
+    """
+    Returns all plugins. The key is the plugin name and the value is the module.
+    :return: plugin dictionary
+    """
     return plugins
 
 
 def _load_activated_plugins():
+    """
+    Loads all activated plugins from the config.
+    """
     for plugin in c.get('webapi', 'active_plugins').split(', '):
         if plugin != '':
             active_plugins.append(plugin)
 
 
 def _save_activated_plugins():
+    """
+    Saves all activated plugins to the config.
+    """
     c.set('webapi', 'active_plugins', ', '.join(active_plugins))
 
 
 def _activate_plugin(*names: str):
+    """
+    Activates all given plugins by their name if the name exists.
+    :param names: plugin names
+    """
     for name in names:
         if name not in active_plugins:
             active_plugins.append(name)
@@ -61,6 +98,10 @@ def _activate_plugin(*names: str):
 
 
 def _deactivate_plugin(*names: str):
+    """
+    Deactivates all given plugins by their name if the plugin is loaded.
+    :param names: plugin names
+    """
     for name in names:
         while name in active_plugins:
             active_plugins.remove(name)
@@ -68,6 +109,12 @@ def _deactivate_plugin(*names: str):
 
 
 def _remove_plugin(*names: str):
+    """
+    Removes plugins by deactivating them if they are activated, removing their objects and removing the corresponding
+    folders.
+
+    :param names: plugin names
+    """
     for name in names:
         if name in active_plugins:
             active_plugins.remove(name)
@@ -77,8 +124,11 @@ def _remove_plugin(*names: str):
         if isdir(join(blueprint_path, name)):
             l.warning(f"Removing plugin {name}")
             rmtree(join(blueprint_path, name))
+    # TODO Does not work if streamhelper- is cut
+    # TODO needs to be added for macros aswell
 
 
+# noinspection PyUnresolvedReferences
 def load_plugins(webapi, config: Config, logger: Logger) -> dict:
     global c, l
     c = config
@@ -95,31 +145,32 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
     for d in listdir(blueprint_path):
         if not isdir(join(blueprint_path, d)) or d == '__pycache__':
             continue
-        d_name = d.lower()
-        if d_name.startswith('streamhelper-'):
-            d_name = d_name[13:]
-        logger.debug(f'Loading plugin {d_name}')
+        name = d.lower()
+        if name.startswith('streamhelper-'):
+            name = name[13:]
+        logger.debug(f'Loading plugin {name}')
         try:
             plugin = import_module(f'{d}')
 
-            attrs = ['set_blueprint']
-            for attr in attrs:
-                if not hasattr(plugin, attr):
-                    raise AttributeError(f'Plugin {d_name} misses the attribute {attr}, which is expected by the '
-                                         f'framework.')
+            attr = 'set_blueprint'
+            if not hasattr(plugin, attr):
+                raise AttributeError(f'Plugin {name} misses the attribute {attr}.')
+            from inspect import isfunction
+            if not isfunction(getattr(plugin, attr)):
+                raise AttributeError(f'Plugin {name} has the attribute {attr}, but it\'s not a function.')
 
-            plugin.name = d_name
+            plugin.name = name
             plugin.config = config
             plugin.logger = logger
             blueprint = Blueprint(
-                d_name,
-                d_name,
+                name,
+                name,
                 template_folder=join(blueprint_path, d, 'templates'),
                 static_folder=join(blueprint_path, d, 'static'),
-                url_prefix=f'/{d_name}'
+                url_prefix=f'/{name}'
             )
             plugin.set_blueprint(blueprint)
-            plugins[d_name] = plugin
+            plugins[name] = plugin
 
             webapi.register_blueprint(blueprint)
             if hasattr(plugin, 'provides_pages'):
@@ -129,13 +180,13 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
                             page[0],
                             f'{plugin.name}.{page[1]}',
                             page[2] if len(page) > 2 else 1000,
-                            d_name
+                            name
                         )
                     )
 
             logger.debug('Finished')
         except Exception as e:
-            logger.warning(f'Loading plugin {d_name} has failed: {e}')
+            logger.warning(f'Loading plugin {name} has failed: {e}')
 
     # Load active plugin list and remove unavailable plugins
     _load_activated_plugins()

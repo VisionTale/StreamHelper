@@ -29,7 +29,7 @@ class Config:
             self._config.read(self._config_fp)
         self.update_config()
 
-    def get(self, app, key) -> str:
+    def get(self, app: str, key: str) -> str:
         """
         Get a configuration value for a plugin.
         :param app: the plugins internal name
@@ -41,7 +41,7 @@ class Config:
         except KeyError:
             return ""
 
-    def set(self, app, key, value):
+    def set(self, app: str, key: str, value: str):
         """
         Set a configuration value for a plugin.
         :param app: the plugins internal name
@@ -54,7 +54,7 @@ class Config:
         with open(self._config_fp, 'w') as f:
             self._config.write(f)
 
-    def set_if_none(self, app, key, value):
+    def set_if_none(self, app: str, key: str, value: str):
         """
         Set a configuration value for a plugin but only if the value does not exist.
         :param app: the plugins internal name
@@ -69,7 +69,19 @@ class Config:
         with open(self._config_fp, 'w') as f:
             self._config.write(f)
 
-    def has(self, app, key) -> bool:
+    def get_or_set(self, app: str, key: str, default_value: str) -> str:
+        """
+        Reads the configuration value for a plugin, if it does not exist, it set's it to the default value.
+        :param app: the plugins internal name
+        :param key: the key within the application
+        :param default_value: the value to set to if the key does not exist
+        :return: the value of the key
+        """
+        if not self.has(app, key):
+            self.set(app, key, default_value)
+        return self.get(app, key)
+
+    def has(self, app: str, key: str) -> bool:
         """
         Check if a configuration value for a plugin exists.
         :param app: the plugins internal name
@@ -78,11 +90,11 @@ class Config:
         """
         if app not in self._config.sections():
             return False
-        if key in self._config[app].keys():
+        if key not in self._config[app].keys():
             return False
         return True
 
-    def create_section(self, app):
+    def create_section(self, app: str):
         """
         Create a section for the plugin with the given name if not already existent.
         :param app: the plugins internal name
