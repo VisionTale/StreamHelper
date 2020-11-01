@@ -1,8 +1,14 @@
+# Confidential
 exports
 .flaskenv
 config.ini
 config.ini.bak
+
+# docker-composee generated files
 config/
+.python3.9/
+media/
+cache/
 
 # Created by https://www.toptal.com/developers/gitignore/api/python,pycharm+all
 # Edit at https://www.toptal.com/developers/gitignore?templates=python,pycharm+all
