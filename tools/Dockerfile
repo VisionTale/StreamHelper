@@ -34,24 +34,6 @@ ENV SH_MACRO_PATH=${SH_MACRO_PATH:-"$SH_DATA_DIR/macros"}
 ENV SH_LOG_TYPES=${SH_LOG_TYPES:-'STREAM'}
 ENV SH_LOG_LEVEL=${SH_LOG_LEVEL:-'WARNING'}
 
-
-RUN apk --no-cache add \
-    build-base \
-    openssl \
-    bash \
-    git \
-    freetype-dev \
-    fribidi-dev \
-    harfbuzz-dev \
-    jpeg-dev \
-    lcms2-dev \
-    openjpeg-dev \
-    tcl-dev \
-    tiff-dev \
-    tk-dev \
-    zlib-dev\
-    sqlite
-
 RUN mkdir -p "$BASEDIR" "$WORKDIR" "$SH_CONFIG_DIR" "$SH_CACHE_DIR" "$SH_DATA_DIR" \
 "$SH_TEMPLATE_PATH" "$SH_STATIC_PATH" "$SH_PLUGIN_PATH" "$SH_MACRO_PATH"
 
@@ -84,6 +66,23 @@ RUN python3 "$WORKDIR/webapi/libs/config.py"
 EXPOSE $PORT
 
 VOLUME $SH_CONFIG_DIR
+
+RUN apk --no-cache add \
+    build-base \
+    openssl \
+    bash \
+    git \
+    freetype-dev \
+    fribidi-dev \
+    harfbuzz-dev \
+    jpeg-dev \
+    lcms2-dev \
+    openjpeg-dev \
+    tcl-dev \
+    tiff-dev \
+    tk-dev \
+    zlib-dev \
+    sqlite
 
 ENTRYPOINT ["/bin/sh", "start.sh"]
 
