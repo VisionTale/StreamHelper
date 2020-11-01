@@ -129,28 +129,53 @@ def _remove_plugin(*names: str):
 
 
 # noinspection PyUnresolvedReferences
-def load_plugins(webapi, config: Config, logger: Logger) -> dict:
+def load_plugins(webapi, config: Config, logger: Logger):
+    """
+    Loads all plugins.
+
+    Any folder located in config.get('webapi', 'plugin_path') is tried to import as module except of __pychache__.
+
+    If a plugin's folder starts with 'streamhelper-' (case insensitive), this part will be removed in the plugin name.
+
+    All plugins need to have a set_blueprint(blueprint: flask.Blueprint) function, which should be responsible for
+    setting the blueprint. Routes and other things shall not be defined before the blueprint is set.
+
+    Within the process, multiple attributes will be set: name, config, logger.
+
+    The given blueprint will have the static and templates folder set at the root of the module, the name is the folder
+    name in lowercase (the prefix 'streamhelper-' will be stripped, see above) and the url_prefix will be the name, so
+    a plugin called 'test' will have it routes below '/test'.
+
+    After execution, plugin.exec_post_actions() may be called, which invokes the function post_loading_actions() on all
+    plugins if available. No order implied.
+
+    :param webapi: the applications flask object
+    :param config: the global config object
+    :param logger:the global logging object
+    """
     global c, l
     c = config
     l = logger
 
     from os import listdir
-    from os.path import isdir, join
+    from os.path import isdir, join, basename, dirname
     from importlib import import_module
     from sys import path
 
     blueprint_path = config.get('webapi', 'plugin_path')
-    path.append(blueprint_path)
+    path.append(dirname(blueprint_path.rstrip('/')))
+    blueprints = import_module(basename(blueprint_path.rstrip('/')))
     logger.info(f'Searching plugins in {blueprint_path}')
     for d in listdir(blueprint_path):
         if not isdir(join(blueprint_path, d)) or d == '__pycache__':
             continue
+
         name = d.lower()
         if name.startswith('streamhelper-'):
             name = name[13:]
         logger.debug(f'Loading plugin {name}')
         try:
-            plugin = import_module(f'{d}')
+            plugin = import_module(f'.{d}', package=blueprints.__package__)
 
             attr = 'set_blueprint'
             if not hasattr(plugin, attr):
@@ -184,9 +209,9 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
                         )
                     )
 
-            logger.debug('Finished')
+            logger.debug(' -> Finished')
         except Exception as e:
-            logger.warning(f'Loading plugin {name} has failed: {e}')
+            logger.warning(f' -> Loading plugin {name} has failed: {e}')
 
     # Load active plugin list and remove unavailable plugins
     _load_activated_plugins()
@@ -244,3 +269,15 @@ def load_plugins(webapi, config: Config, logger: Logger) -> dict:
 
         _remove_plugin(name)
         return redirect_or_response(request, 200, redirect_url, 'Success')
+
+
+# noinspection PyUnresolvedReferences
+def exec_post_actions():
+    """
+    Execute post_loading_actions() on all plugins that implement the function. No order implied.
+    """
+    from inspect import isfunction
+    for plugin in plugins.values():
+        if hasattr(plugin, 'post_loading_actions') and isfunction(plugin.post_loading_actions):
+            l.debug(f'Running post loading actions for {plugin.name}')
+            plugin.post_loading_actions()

@@ -38,7 +38,12 @@ def load_macros(config: Config, logger: Logger):
     """
     Loads all macros.
 
-    It loads all moules from the macro path. All macros need to have the attribute use_module. If it is true, the
+    Any folder located in config.get('webapi', 'macro_path') is tried to import as module except of __pychache__.
+
+    If a module is loaded as macro and the name of it's folder starts with 'streamhelper-' (case insensitive), this part
+    will be removed in the macro name.
+
+    All macros need to have the attribute use_module. If it is true, the
     module itself will be loaded as the macro. Otherwise, it needs to have the attribute provides_macros, which is a
     list. If an element in the list is a string, it is assumed to be the name of a class inside the module, and
     module.class is tried to initialize. If it is a class, it will be initialized directly both times without arguments.
@@ -56,22 +61,28 @@ def load_macros(config: Config, logger: Logger):
     c = config
 
     from os import listdir
-    from os.path import isdir, join
+    from os.path import isdir, join, isfile, dirname, basename
     from importlib import import_module
     from sys import path
 
     macro_path = config.get('webapi', 'macro_path')
-    path.append(macro_path)
+    path.append(dirname(macro_path.rstrip('/')))
+    modules = import_module(basename(macro_path.rstrip('/')))
     logger.info(f'Searching macros in {macro_path}')
     for d in listdir(macro_path):
-        if not isdir(join(macro_path, d)) or d == '__pycache__':
+        if d == '__pycache__' or d == '__init__.py':
+            continue
+        fp = join(macro_path, d)
+        if not isfile(fp) and not isdir(fp):
+            continue
+        if isfile(fp) and not fp.endswith('.py'):
             continue
         name = d.lower()
         if name.startswith('streamhelper-'):
             name = name[13:]
-        logger.debug(f'Loading macros {name}')
+        logger.debug(f'Loading macros from {name}')
         try:
-            macro = import_module(f'{d}')
+            macro = import_module(f'.{d.rstrip(".py")}', package=modules.__package__)
 
             _check_attributes(macro, [('use_module', bool)], name)
             if macro.use_module:
@@ -84,7 +95,7 @@ def load_macros(config: Config, logger: Logger):
             else:
                 from inspect import isclass
                 _check_attributes(macro, [('provides_macros', list)], name)
-                for cl in macro.provides_classes:
+                for cl in macro.provides_macros:
                     if type(cl) == str:
                         logger.debug(' -> Loading macro by initializing a object from given class name')
                         if not isclass(getattr(macro, cl)):
@@ -100,7 +111,7 @@ def load_macros(config: Config, logger: Logger):
                     macro_object.logger = logger
                     macro_object.config = config
                     if not hasattr(macro_object, 'name'):
-                        macro_object.name = cl.__name__
+                        macro_object.name = cl.__name__ if type(cl) != str else cl.lower()
                         logger.debug(f' -> Name assumed to be \'{macro_object.name}\'')
                     macros[macro_object.name] = macro_object
                     if hasattr(macro_object, 'post_load'):
@@ -109,7 +120,7 @@ def load_macros(config: Config, logger: Logger):
 
             logger.debug(' -> Finished')
         except Exception as e:
-            logger.warning(f' -> Loading plugin {name} has failed: {e}')
+            logger.warning(f' -> Loading macro {name} has failed: {e}')
 
 
 def _check_attributes(obj: ModuleType, attrs: List[Tuple[str, Type]], name: str):
