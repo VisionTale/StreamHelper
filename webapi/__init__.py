@@ -90,7 +90,7 @@ def create_app():
     exec_post_actions()
 
     # Make function callable from jinja templates
-    expose_function_for_templates(get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
+    expose_function_for_templates(len=len, get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
                                   get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
                                   get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version)
 

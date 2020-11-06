@@ -18,16 +18,18 @@
                 </div>
             </div>
         </form>
-        <div class="card-deck">
+        <div class="card-deck" style="word-break: break-word;">
+        <div class="row">
             {% with plugins = get_plugins() %}
                 {% do plugins.sort() %}
                 {% if plugins %}
                     {% for plugin, description in plugins %}
-                        <div class="card border-primary mb-3" style="max-width: 18rem;">
+                        <div class="col-lg-4 col-md-6 col-sm-6 col-12 d-flex align-items-stretch">
+                        <div class="card border-primary mb-3" style="width: 100%;">
                             <div class="card-header">Plugin</div>
                             <div class="card-body">
                                 <h5 class="card-title">{{ plugin.capitalize() }}</h5>
-                                <p class="card-text">{{ description }}</p>
+                                <p class="card-text">{{ description if len(description) < 200 else description[:200] }}</p>
                                 {% if plugin in ['base', 'errors', 'user'] %}
                                     <a href="#" class="btn btn-primary disabled" tabindex="-1" role="button" aria-disabled="true">Active</a>
                                 {% elif plugin in get_active_plugins() %}
@@ -49,6 +51,7 @@
                                 {% endif %}
                             </div>
                         </div>
+                        </div>
                     {% endfor %}
                 {% endif %}
             {% endwith %}
@@ -56,7 +59,8 @@
                 {% do macros.sort() %}
                 {% if macros %}
                     {% for macro, description in macros %}
-                        <div class="card border-primary mb-3" style="max-width: 18rem;">
+                        <div class="col-lg-4 col-md-6 col-sm-6 col-12 d-flex align-items-stretch">
+                        <div class="card border-primary mb-3" style="width: 100%;">
                             <div class="card-header">Macro</div>
                             <div class="card-body">
                                 <h5 class="card-title">{{ macro.capitalize() }}</h5>
@@ -70,10 +74,12 @@
                                 </a>
                             </div>
                         </div>
+                        </div>
                     {% endfor %}
                 </div>
             {% endif %}
         {% endwith %}
+    </div>
     </div>
 {% endblock %}
 
