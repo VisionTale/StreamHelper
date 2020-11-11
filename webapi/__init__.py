@@ -16,6 +16,7 @@ template_folder = config.get('flask', 'template_path')
 static_folder = config.get('flask', 'static_path')
 bootstrap_version = config.get('webapi', 'bootstrap_version')
 jquery_version = config.get('webapi', 'jquery_version')
+ace_version = config.get('webapi', 'ace_version')
 
 # Pre-init flask extensions
 db = SQLAlchemy()
@@ -39,6 +40,9 @@ def create_app():
 
     # Ensure jquery is available
     download_jquery(static_folder, jquery_version)
+
+    # Ensure ace is available
+    download_ace(static_folder, ace_version)
 
     # Initialization of the flask application
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -92,7 +96,8 @@ def create_app():
     # Make function callable from jinja templates
     expose_function_for_templates(len=len, get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
                                   get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
-                                  get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version)
+                                  get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version,
+                                  get_ace_version=get_ace_version)
 
     # Create a basic redirect to the base plugin
     @webapi.route('/')
@@ -182,9 +187,41 @@ def download_jquery(static_dir, version):
             f.write(map_request.content)
 
 
+def download_ace(static_dir, version):
+    """
+    Downloads the ace files.
+    :param static_dir: global static dir
+    :param version: ace version
+    :return:
+    """
+    from os.path import isdir, join
+
+    ace_dir = join(static_dir, f'ace-builds-{version}')
+    if not isdir(ace_dir):
+        print("Downloading ace files..")
+        import requests
+
+        url = f'https://github.com/ajaxorg/ace-builds/archive/v{version}.zip'
+        zip_file_fp = join(static_dir, f'v{version}.zip')
+        r = requests.get(url)
+        with open(zip_file_fp, 'wb') as f:
+            f.write(r.content)
+        from zipfile import ZipFile
+        print("Unzipping..")
+        with ZipFile(zip_file_fp, 'r') as zip_file:
+            zip_file.extractall(static_dir)
+        from os import remove
+        remove(zip_file_fp)
+        print("Done!")
+
+
 def get_bootstrap_version():
     return bootstrap_version
 
 
 def get_jquery_version():
     return jquery_version
+
+
+def get_ace_version():
+    return ace_version
