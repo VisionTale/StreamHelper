@@ -226,15 +226,13 @@ def load_plugins(webapi, config: Config, logger: Logger):
         used by the frontend, and does not unload the plugin. TODO Real load/unload
         :return: redirect if redirect_url was passed, otherwise response
         """
-        redirect_url = request.args.get('redirect_url')
         name = request.args.get('name')
-
         if not name or name == '':
             flash('Missing parameter name')
-            return redirect_or_response(request, 400, redirect_url, 'Missing parameter name')
+            return redirect_or_response(request, 400, 'Missing parameter name')
 
         _activate_plugin(name)
-        return redirect_or_response(request, 200, redirect_url, 'Success')
+        return redirect_or_response(request, 200, 'Success')
 
     @webapi.route('/deactivate_plugin')
     def deactivate_plugin():
@@ -243,15 +241,13 @@ def load_plugins(webapi, config: Config, logger: Logger):
         method used by the frontend, and does not unload the plugin. TODO Real load/unload
         :return: redirect if redirect_url was passed, otherwise response
         """
-        redirect_url = request.args.get('redirect_url')
-        name = request.args.get('name')
-
-        if not name or name == '':
+        plugin_name = request.args.get('name')
+        if not plugin_name or plugin_name == '':
             flash('Missing parameter name')
-            return redirect_or_response(request, 400, redirect_url, 'Missing parameter name')
+            return redirect_or_response(request, 400, 'Missing parameter name')
 
-        _deactivate_plugin(name)
-        return redirect_or_response(request, 200, redirect_url, 'Success')
+        _deactivate_plugin(plugin_name)
+        return redirect_or_response(request, 200, 'Success')
 
     @webapi.route('/remove_plugin')
     def remove_plugin():
@@ -260,15 +256,14 @@ def load_plugins(webapi, config: Config, logger: Logger):
         changes to take effect.
         :return: redirect if redirect_url was passed, otherwise response
         """
-        redirect_url = request.args.get('redirect_url')
-        name = request.args.get('name')
+        plugin_name = request.args.get('name')
 
-        if not name or name == '':
+        if not plugin_name or plugin_name == '':
             flash('Missing parameter name')
-            return redirect_or_response(request, 400, redirect_url, 'Missing parameter name')
+            return redirect_or_response(request, 400, 'Missing parameter name')
 
-        _remove_plugin(name)
-        return redirect_or_response(request, 200, redirect_url, 'Success')
+        _remove_plugin(plugin_name)
+        return redirect_or_response(request, 200, 'Success')
 
 
 # noinspection PyUnresolvedReferences

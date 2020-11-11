@@ -1,7 +1,7 @@
 from flask import request as r, redirect, jsonify
 
 
-def redirect_or_response(request: r, http_status: int = 200, redirect_url: str = None, response_text: str = ''):
+def redirect_or_response(request: r, http_status: int = 200, response_text: str = '', redirect_url: str = None):
     """
     Creates a flask return object. If redirect_url is passed, a redirect object will be passed, (only) if not, depending
     on the accepted mime types either an json or a plain html response will be created. If neither redirect_url nor
@@ -9,11 +9,12 @@ def redirect_or_response(request: r, http_status: int = 200, redirect_url: str =
 
     :param request: the request object of the current request
     :param http_status: status code to pass to the application, defaults to 200
-    :param redirect_url: url to redirect to (does not need to be set)
     :param response_text: text to show in the response (ignored if redirect_url is set)
+    :param redirect_url: url to redirect to (does not need to be set). If not set, request is checked for a passed
+        redirect_url parameter.
     :return: the flask return object
     """
-
+    redirect_url = redirect_url or request.args.get('redirect_url') or request.form.get('redirect_url')
     if redirect_url:
         if redirect_url.endswith('/'):
             redirect_url = redirect_url[:-1]
