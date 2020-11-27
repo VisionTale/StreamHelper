@@ -3,14 +3,15 @@
 {% block page_content %}
     <div class="jumbotron">
         <h1 class="display-4">Hi, {{ current_user.username }}!</h1>
-        <p class="lead">Welcome to the StreamHelper framework. I want to make your straming and broadcasting experience
+        <p class="lead">Welcome to the StreamHelper framework. I want to make your streaming and broadcasting experience
             better by giving you a modular, easy to extend and flexible framework. Here you can add and activate
             plugins. Without plugins, this framework does not much by itself.</p>
         <hr class="my-4">
-        <form enctype="multipart/form-data" action="{{ url_for('base.install') }}" method="POST">
+        <form enctype="multipart/form-data" action="{{ url_for(name+'.install') }}" method="POST">
             <div class="input-group mb-3">
                 <div class="custom-file">
                     <input type="file" class="custom-file-input" id="inputGroupFile02" name="plugin" accept="application/zip">
+                    <input type="hidden" name="redirect_url" id="redirect_url" value="{{ url_for(name+'.dashboard') }}"/>
                     <label class="custom-file-label" for="inputGroupFile02" aria-describedby="inputGroupFileAddon02">Choose file</label>
                 </div>
                 <div class="input-group-append">
@@ -24,7 +25,7 @@
                 {% do plugins.sort() %}
                 {% if plugins %}
                     {% for plugin, description in plugins %}
-                        <div class="col-lg-4 col-md-6 col-sm-6 col-12 d-flex align-items-stretch">
+                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 d-flex align-items-stretch">
                         <div class="card border-primary mb-3" style="width: 100%;">
                             <div class="card-header">Plugin</div>
                             <div class="card-body">
@@ -34,7 +35,7 @@
                                     <a href="#" class="btn btn-primary disabled" tabindex="-1" role="button" aria-disabled="true">Active</a>
                                 {% elif plugin in get_active_plugins() %}
                                     <a
-                                        href="{{ url_for('deactivate_plugin') }}?name={{ plugin }}&redirect_url={{ url_for('base.dashboard') }}"
+                                        href="{{ url_for('deactivate_plugin') }}?name={{ plugin }}&redirect_url={{ url_for(name+'.dashboard') }}"
                                         class="btn btn-primary"
                                         role="button"
                                     >
@@ -42,7 +43,7 @@
                                     </a>
                                 {% else %}
                                     <a
-                                        href="{{ url_for('activate_plugin') }}?name={{ plugin }}&redirect_url={{ url_for('base.dashboard') }}"
+                                        href="{{ url_for('activate_plugin') }}?name={{ plugin }}&redirect_url={{ url_for(name+'.dashboard') }}"
                                         class="btn btn-primary"
                                         role="button"
                                     >
@@ -59,7 +60,7 @@
                 {% do macros.sort() %}
                 {% if macros %}
                     {% for macro, description in macros %}
-                        <div class="col-lg-4 col-md-6 col-sm-6 col-12 d-flex align-items-stretch">
+                        <div class="col-xl-3 col-lg-4 col-md-6 col-sm-6 col-12 d-flex align-items-stretch">
                         <div class="card border-primary mb-3" style="width: 100%;">
                             <div class="card-header">Macro</div>
                             <div class="card-body">
@@ -91,9 +92,9 @@
                 data: { name: name },
                 type: 'GET'
             });
-            button.textContent = "Deactivate"
-            button.onclick = () => deactivatePlugin(name, button)
-            createRefreshButton()
+            button.textContent = "Deactivate";
+            button.onclick = () => deactivatePlugin(name, button);
+            createRefreshButton();
         }
         function deactivatePlugin (name, button) {
            $.ajax({
@@ -101,19 +102,19 @@
                 data: { name: name },
                 type: 'GET'
             });
-            button.textContent = "Activate"
-            button.onclick = () => activatePlugin(name, button)
-            createRefreshButton()
+            button.textContent = "Activate";
+            button.onclick = () => activatePlugin(name, button);
+            createRefreshButton();
         }
         function createRefreshButton() {
             if (document.getElementById("refreshButton") != null) {
                 return
             }
-            let nav = document.getElementsByClassName('nav').item(0)
-            let refreshButton = document.createElement("li")
-            refreshButton.id = "refreshButton"
-            refreshButton.className = "nav-item"
-            refreshButton.innerHTML = "<a class=\"nav-link btn-danger\" onclick=\"location.reload()\">Refresh</a>"
+            let nav = document.getElementsByClassName('nav').item(0);
+            let refreshButton = document.createElement("li");
+            refreshButton.id = "refreshButton";
+            refreshButton.className = "nav-item";
+            refreshButton.innerHTML = "<a class=\"nav-link btn-danger\" onclick=\"location.reload()\">Refresh</a>";
             nav.appendChild(refreshButton)
         }
     </script>

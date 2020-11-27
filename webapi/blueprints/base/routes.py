@@ -7,7 +7,9 @@ from flask import render_template, request, redirect, flash, url_for
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 
-from . import bp
+from webapi.libs.api.response import response, redirect_or_response
+
+from . import bp, name
 
 
 def _allowed_file(filename):
@@ -102,9 +104,9 @@ def dashboard():
     """
     Renders the dashboard.
 
-    :return:
+    :return: rendered dashboard
     """
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', name=name)
 
 
 @bp.route('/install', methods=['POST'])
@@ -113,36 +115,34 @@ def install():
     """
     Install a given zip containing a blueprint.
 
-    The files argument name for the blueprint must be 'plugin'.
+    Arguments:
+            - plugin (must be a file)
 
-    :return:
+    :return: redirect or 201 response
     """
-    from . import logger
-    if request.method == 'POST':
-        if 'plugin' not in request.files:
-            flash('No file part')
-            return redirect(url_for('base.dashboard'))
-        file = request.files['plugin']
-        logger.debug(f'Uploading file {file}')
-        if file.filename == '':
-            flash('No selected file')
-            return redirect(url_for('base.dashboard'))
-        if file and _allowed_file(file.filename):
-            logger.debug('-> Filename accepted')
-            from . import config
-            filename = secure_filename(file.filename)
-            filepath = join(config.get('webapi', 'plugin_path'), filename)
-            logger.debug(f'-> Saving location: {filepath}')
-            file.save(filepath)
-            logger.debug('-> File saved')
-            name = _extract_blueprint_zip(filepath=filepath, delete=True)
-            logger.debug('-> Files extracted')
-            _install_dependencies(name)
-            logger.debug('-> Dependencies installed')
+    from . import logger, name
+    if 'plugin' not in request.files:
+        return redirect_or_response(400, 'Missing file "plugin"')
+    file = request.files['plugin']
+    logger.debug(f'Uploading file {file}')
+    if file.filename == '':
+        return redirect_or_response(400, 'Passed file is invalid (no filename found)')
+    if file and _allowed_file(file.filename):
+        logger.debug('-> Filename accepted')
+        from . import config
+        filename = secure_filename(file.filename)
+        filepath = join(config.get('webapi', 'plugin_path'), filename)
+        logger.debug(f'-> Saving location: {filepath}')
+        file.save(filepath)
+        logger.debug('-> File saved')
+        fp = _extract_blueprint_zip(filepath=filepath, delete=True)
+        logger.debug('-> Files extracted')
+        _install_dependencies(fp)
+        logger.debug('-> Dependencies installed')
 
-            sleep(2)
-            return redirect(url_for('base.dashboard'))
-    return redirect(url_for('base.dashboard'))
+        sleep(2)
+        return redirect(201, "Installed")
+    return redirect_or_response(400, 'Missing post parameters')
 
 
 @bp.route('/ping')
@@ -152,4 +152,4 @@ def ping():
 
     :return:
     """
-    return "", 200
+    return response(200)

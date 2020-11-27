@@ -18,7 +18,7 @@ plugins: Plugins = dict()
 active_plugins: List[str] = list()
 plugin_pages: PluginPages = list()
 c: Config = None
-l: Logger = None
+log: Logger = None
 
 
 def get_plugin_pages() -> PluginPages:
@@ -122,10 +122,10 @@ def _remove_plugin(*names: str):
             del plugins[name]
         blueprint_path = c.get('webapi', 'plugin_path')
         if isdir(join(blueprint_path, name)):
-            l.warning(f"Removing plugin {name}")
+            log.warning(f"Removing plugin {name}")
             rmtree(join(blueprint_path, name))
     # TODO Does not work if streamhelper- is cut
-    # TODO needs to be added for macros aswell
+    # TODO needs to be added for macros as well
 
 
 # noinspection PyUnresolvedReferences
@@ -153,9 +153,9 @@ def load_plugins(webapi, config: Config, logger: Logger):
     :param config: the global config object
     :param logger:the global logging object
     """
-    global c, l
+    global c, log
     c = config
-    l = logger
+    log = logger
 
     from os import listdir
     from os.path import isdir, join, basename, dirname
@@ -226,44 +226,42 @@ def load_plugins(webapi, config: Config, logger: Logger):
         used by the frontend, and does not unload the plugin. TODO Real load/unload
         :return: redirect if redirect_url was passed, otherwise response
         """
-        name = request.args.get('name')
-        if not name or name == '':
-            flash('Missing parameter name')
-            return redirect_or_response(request, 400, 'Missing parameter name')
+        plugin_name = param('name')
+        if not is_set(plugin_name):
+            return redirect_or_response(400, 'Missing parameter name')
 
-        _activate_plugin(name)
-        return redirect_or_response(request, 200, 'Success')
+        _activate_plugin(plugin_name)
+        return redirect_or_response(200, 'Success')
 
-    @webapi.route('/deactivate_plugin')
+    @webapi.route('/deactivate_plugin', methods=['GET', 'POST'])
     def deactivate_plugin():
         """
         Deactivates a plugin. At the time, activation and deactivation of plugins only affects the active_plugin()
         method used by the frontend, and does not unload the plugin. TODO Real load/unload
         :return: redirect if redirect_url was passed, otherwise response
         """
-        plugin_name = request.args.get('name')
-        if not plugin_name or plugin_name == '':
-            flash('Missing parameter name')
-            return redirect_or_response(request, 400, 'Missing parameter name')
+        plugin_name = param('name')
+        if not is_set(plugin_name):
+            return redirect_or_response(400, 'Missing parameter name')
 
         _deactivate_plugin(plugin_name)
-        return redirect_or_response(request, 200, 'Success')
+        return redirect_or_response(200, 'Success')
 
     @webapi.route('/remove_plugin')
     def remove_plugin():
         """
         Removes a plugin completely. If flask does not auto reload, the application may need to be restartet for the
         changes to take effect.
+            - name
+
         :return: redirect if redirect_url was passed, otherwise response
         """
-        plugin_name = request.args.get('name')
-
-        if not plugin_name or plugin_name == '':
-            flash('Missing parameter name')
-            return redirect_or_response(request, 400, 'Missing parameter name')
+        plugin_name = param('name')
+        if not is_set(plugin_name):
+            return redirect_or_response(400, 'Missing parameter name')
 
         _remove_plugin(plugin_name)
-        return redirect_or_response(request, 200, 'Success')
+        return redirect_or_response(200, 'Success')
 
 
 # noinspection PyUnresolvedReferences
@@ -274,5 +272,5 @@ def exec_post_actions():
     from inspect import isfunction
     for plugin in plugins.values():
         if hasattr(plugin, 'post_loading_actions') and isfunction(plugin.post_loading_actions):
-            l.debug(f'Running post loading actions for {plugin.name}')
+            log.debug(f'Running post loading actions for {plugin.name}')
             plugin.post_loading_actions()

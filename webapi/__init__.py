@@ -1,6 +1,6 @@
 from typing import Callable
 
-from flask import Flask, redirect, url_for, send_from_directory
+from flask import Flask, Request, redirect, url_for, send_from_directory
 from flask.templating import Environment
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -9,6 +9,7 @@ from flask_bootstrap import Bootstrap
 
 from webapi.libs.config import Config
 from webapi.libs.log import setup_webapi as setup, Logger
+from webapi.libs.text import camel_case
 
 # Config loading
 config = Config()
@@ -94,10 +95,11 @@ def create_app():
     exec_post_actions()
 
     # Make function callable from jinja templates
-    expose_function_for_templates(len=len, get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
+    expose_function_for_templates(len=len, enumerate=enumerate,
+                                  get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
                                   get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
                                   get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version,
-                                  get_ace_version=get_ace_version)
+                                  get_ace_version=get_ace_version, camel_case=camel_case)
 
     # Create a basic redirect to the base plugin
     @webapi.route('/')
@@ -114,6 +116,15 @@ def create_app():
     def get_thumbnail(filename):
         return send_from_directory(config.get('webapi', 'thumbnail_path'), filename)
 
+    @webapi.route('/favicon.ico')
+    def favicon():
+        """
+        Redirects the favicon url.
+
+        :return: url for favicon
+        """
+        return redirect(url_for('static', filename='ico/visiontale16.ico'))
+
     return webapi
 
 
@@ -126,47 +137,41 @@ def expose_function_for_templates(**kwargs):
     jinja_env.globals.update(**kwargs)
 
 
-def download_bootstrap(static_dir, version):
+def download_bootstrap(static_dir: str, version: str, verbose: bool = True):
     """
     Downloads the bootstrap dist files.
+
     :param static_dir: global static dir
     :param version: bootstrap version
-    :return:
+    :param verbose: whether to print information, defaults to true.
     """
     from os.path import isdir, join
 
     bootstrap_dir = join(static_dir, f'bootstrap-{version}-dist')
     if not isdir(bootstrap_dir):
-        print("Downloading bootstrap files..")
-        import requests
-
+        debug_print("Downloading bootstrap files..", verbose)
         url = f'https://github.com/twbs/bootstrap/releases/download/v{version}/bootstrap-{version}-dist.zip'
+        debug_print(f'Download url: {url}', verbose)
+
         zip_file_fp = join(static_dir, 'bootstrap.zip')
-        r = requests.get(url)
-        with open(zip_file_fp, 'wb') as f:
-            f.write(r.content)
-        from zipfile import ZipFile
-        print("Unzipping..")
-        with ZipFile(zip_file_fp, 'r') as zip_file:
-            zip_file.extractall(static_dir)
-        from os import remove
-        remove(zip_file_fp)
-        print("Done!")
+        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
+
+        debug_print("Done!", verbose)
 
 
-def download_jquery(static_dir, version):
+def download_jquery(static_dir: str, version: str, verbose: bool = True):
     """
-    Downloads the jquery javascript and map file.
+    Downloads the jquery javascript and map files.
+
     :param static_dir: global static dir
     :param version: jquery version
-    :return:
+    :param verbose: whether to print information, defaults to true.
     """
     from os.path import isdir, isfile, join
 
     jquery_dir = join(static_dir, 'jquery')
     if not isdir(jquery_dir) or not isfile(join(jquery_dir, f'jquery-{version}.min.js')):
-        print("Downloading jquery files..")
-        import requests
+        debug_print("Downloading jquery files..", verbose)
 
         from os import mkdir
         mkdir(jquery_dir)
@@ -174,8 +179,11 @@ def download_jquery(static_dir, version):
         js_url = f'https://code.jquery.com/jquery-{version}.min.js'
         map_url = f'https://code.jquery.com/jquery-{version}.min.map'
 
-        js_request = requests.get(js_url)
-        map_request = requests.get(map_url)
+        debug_print(f'Download urls: {js_url} + {map_url}', verbose)
+
+        from requests import get
+        js_request = get(js_url)
+        map_request = get(map_url)
 
         js_fp = join(jquery_dir, f'jquery-{version}.min.js')
         map_fp = join(jquery_dir, f'jquery-{version}.min.map')
@@ -186,33 +194,55 @@ def download_jquery(static_dir, version):
         with open(map_fp, 'wb') as f:
             f.write(map_request.content)
 
+        debug_print("Done!", verbose)
 
-def download_ace(static_dir, version):
+
+def download_ace(static_dir: str, version: str, verbose: bool = True):
     """
     Downloads the ace files.
+
     :param static_dir: global static dir
     :param version: ace version
-    :return:
+    :param verbose: whether to print information, defaults to true.
+    :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
     """
     from os.path import isdir, join
 
     ace_dir = join(static_dir, f'ace-builds-{version}')
     if not isdir(ace_dir):
-        print("Downloading ace files..")
-        import requests
-
+        debug_print("Downloading ace files..", verbose)
         url = f'https://github.com/ajaxorg/ace-builds/archive/v{version}.zip'
+        debug_print(f'Download url: {url}', verbose)
+
         zip_file_fp = join(static_dir, f'v{version}.zip')
-        r = requests.get(url)
-        with open(zip_file_fp, 'wb') as f:
-            f.write(r.content)
-        from zipfile import ZipFile
-        print("Unzipping..")
-        with ZipFile(zip_file_fp, 'r') as zip_file:
-            zip_file.extractall(static_dir)
+        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
+
+        debug_print("Done!", verbose)
+
+
+def download_and_unzip_archive(url: str, zip_file_fp: str, remove: bool = True, verbose: bool = True):
+    """
+    Downloads and unzips an archive.
+    
+    :param url: url to request
+    :param zip_file_fp: filepath for zip
+    :param remove: whether to remove the zip after unpacking, defaults to true. 
+    :param verbose: whether to print information, defaults to true.
+    :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
+    """
+    from requests import get
+    r = get(url)
+    debug_print("Saving archive..", verbose)
+    with open(zip_file_fp, 'wb') as f:
+        f.write(r.content)
+    debug_print("Extracting..", verbose)
+    from zipfile import ZipFile
+    with ZipFile(zip_file_fp, 'r') as zip_file:
+        zip_file.extractall(static_dir)
+    if remove:
+        debug_print("Removing archive..", verbose)
         from os import remove
         remove(zip_file_fp)
-        print("Done!")
 
 
 def get_bootstrap_version():
@@ -225,3 +255,15 @@ def get_jquery_version():
 
 def get_ace_version():
     return ace_version
+
+
+def debug_print(message: str, verbose: bool):
+    """
+    Print if verbose is set to true.
+
+    :param message: message to print
+    :param verbose: whether to print
+    :return:
+    """
+    if verbose:
+        print(message)
