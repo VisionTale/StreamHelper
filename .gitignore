@@ -3,6 +3,7 @@ exports
 .flaskenv
 config.ini
 config.ini.bak
+test.py
 
 # docker-composee generated files
 config/
