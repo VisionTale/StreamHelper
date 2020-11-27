@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="jumbotron jumbotron-fluid">
+        <div class="container">
+            <h1 class="display-4">Error {{ status_code }} - What happened?</h1>
+            <p class="lead">{{ error_message }}</p>
+        </div>
+    </div>
+{% endblock %}

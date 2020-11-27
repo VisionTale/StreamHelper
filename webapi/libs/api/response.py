@@ -1,7 +1,14 @@
-from flask import request as r, redirect, jsonify
+"""
+Library for sending complex and flexible responses.
+"""
+from flask import request, redirect, jsonify, render_template, flash
+from jinja2.exceptions import TemplateNotFound
+
+from .parsing import param
 
 
-def redirect_or_response(request: r, http_status: int = 200, response_text: str = '', redirect_url: str = None):
+def redirect_or_response(http_status: int = 200, response_text: str = '', redirect_url: str = '',
+                         graphical: bool = False):
     """
     Creates a flask return object. If redirect_url is passed, a redirect object will be passed, (only) if not, depending
     on the accepted mime types either an json or a plain html response will be created. If neither redirect_url nor
@@ -14,8 +21,16 @@ def redirect_or_response(request: r, http_status: int = 200, response_text: str 
         redirect_url parameter.
     :return: the flask return object
     """
-    redirect_url = redirect_url or request.args.get('redirect_url') or request.form.get('redirect_url')
-    if redirect_url:
+    if http_status - 300 >= 0 and graphical:
+        try:
+            return render_template(f'{http_status}.html', error_message=response_text)
+        except TemplateNotFound:
+            return render_template(f'generic.html', error_message=response_text, status_code=http_status)
+    elif http_status - 300 >= 0:
+        flash(f'Error {http_status}: {response_text}')
+
+    redirect_url = redirect_url or param('redirect_url')
+    if redirect_url and redirect_url != '':
         if redirect_url.endswith('/'):
             redirect_url = redirect_url[:-1]
         return redirect(redirect_url)
@@ -25,7 +40,7 @@ def redirect_or_response(request: r, http_status: int = 200, response_text: str 
         return response_text, http_status
 
 
-def response(request: r, http_status: int = 200, response_text: str = ''):
+def response(http_status: int = 200, response_text: str = '', graphical: bool = False):
     """
     Creates a flask return object. Depending on the accepted mime types either an json or a plain html response will be
     created. If response_text is not set, the result will be empty.
@@ -35,4 +50,4 @@ def response(request: r, http_status: int = 200, response_text: str = ''):
     :param response_text: text to show in the response
     :return: the flask return object
     """
-    return redirect_or_response(r, http_status, None, response_text)
+    return redirect_or_response(http_status, response_text, redirect_url=None, graphical=graphical)
