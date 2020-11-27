@@ -1,5 +1,13 @@
 #!/usr/bin/python3
+"""
+Application loader.
 
+Handles:
+    - flaskenv loading
+    - requirement updates for all plugins/macros and main application (if network is available)
+    - database upgrade
+    - loading WSGI server in production mode
+"""
 
 if __name__ == "__main__":
     from sys import path

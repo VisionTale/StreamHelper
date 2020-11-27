@@ -1,3 +1,6 @@
+"""
+Main application.
+"""
 from typing import Callable
 
 from flask import Flask, Request, redirect, url_for, send_from_directory
@@ -32,6 +35,7 @@ def create_app():
     """
     Factory method for creating the flask application and all other substantial parts of the application. This includes
     the flask extensions, the framework-specific plugins and macros and the core logger.
+
     :return: the flask application object
     """
     global logger, jinja_env
@@ -105,15 +109,32 @@ def create_app():
     @webapi.route('/')
     @webapi.route('/dashboard')
     def index():
+        """
+        Redirect to base plugin.
+
+        :return:
+        """
         return redirect(url_for('base.dashboard'))
 
     # Allow access to files in media folder
     @webapi.route('/media/<filename>')
     def get_file(filename):
+        """
+        Open a media file from global media folder.
+
+        :param filename: filename to load
+        :return: file
+        """
         return send_from_directory(config.get('webapi', 'media_path'), filename)
 
     @webapi.route('/thumbnail/<filename>')
     def get_thumbnail(filename):
+        """
+        Open a thumbnail file from global thumbnail folder.
+
+        :param filename: filename to load
+        :return: file
+        """
         return send_from_directory(config.get('webapi', 'thumbnail_path'), filename)
 
     @webapi.route('/favicon.ico')
@@ -131,6 +152,7 @@ def create_app():
 def expose_function_for_templates(**kwargs):
     """
     Make a passed function callable from jinja framework.
+
     :param kwargs: keyword=func pairs, will be callable by the given keyword
     :return:
     """
@@ -246,14 +268,29 @@ def download_and_unzip_archive(url: str, zip_file_fp: str, remove: bool = True, 
 
 
 def get_bootstrap_version():
+    """
+    Get the installed bootstrap version.
+
+    :return: bootstrap version
+    """
     return bootstrap_version
 
 
 def get_jquery_version():
+    """
+    Get the installed jquery version.
+
+    :return: jquery version
+    """
     return jquery_version
 
 
 def get_ace_version():
+    """
+    Get the installed ace version.
+
+    :return: ace version
+    """
     return ace_version
 
 

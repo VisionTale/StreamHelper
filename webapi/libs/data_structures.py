@@ -1,6 +1,12 @@
+"""
+Library for manipulating data structures.
+"""
+
+
 def inverse_stack(stack, remove_function_name) -> list:
     """
     Helper function to inverse a stack.
+
     :param stack: stack
     :param remove_function_name: function name to remove top item
     :return: inverted stack

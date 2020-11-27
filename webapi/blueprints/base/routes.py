@@ -1,3 +1,6 @@
+"""
+Routes for the base plugin.
+"""
 from os import remove
 from os.path import join, basename, dirname
 from zipfile import ZipFile
@@ -150,6 +153,6 @@ def ping():
     """
     Simple ping, returns an empty HTTP 200 response.
 
-    :return:
+    :return: empty 200 response
     """
     return response(200)

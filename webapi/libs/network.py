@@ -1,6 +1,12 @@
+"""
+Library for network operations.
+"""
+
+
 def is_up(host) -> bool:
     """
     Check if a host is up and running.
+
     :param host: hostname
     :return: whether the host is reachable
     """

@@ -1,10 +1,13 @@
+"""
+Macro loader and management.
+"""
 from typing import Tuple, List, Dict, Type
 from types import ModuleType
 
 from webapi.libs.config import Config
 from webapi.libs.log import Logger
 
-Macros = Dict[str, ModuleType]
+Macros = Dict[str, ModuleType]  # {macro_name: module}
 
 macros: Macros = dict()
 c: Config = None
@@ -13,7 +16,8 @@ c: Config = None
 # noinspection PyUnresolvedReferences
 def get_macros_jinja() -> List[Tuple[str, str]]:
     """
-    Returns a list containing of tuples, every tuple contains the lowercase name and the description
+    Returns a list containing of tuples, every tuple contains the lowercase name and the description.
+
     :return: the list of macros
     """
     return [
@@ -28,6 +32,7 @@ def get_macros_jinja() -> List[Tuple[str, str]]:
 def get_macros() -> Macros:
     """
     Returns all macros. The key is the macro name and the value is the object.
+
     :return: macro dictionary
     """
     return macros
@@ -38,7 +43,7 @@ def load_macros(config: Config, logger: Logger):
     """
     Loads all macros.
 
-    Any folder located in config.get('webapi', 'macro_path') is tried to import as module except of __pychache__.
+    Any folder located in config.get('webapi', 'macro_path') is tried to import as module except of __pycache__.
 
     If a module is loaded as macro and the name of it's folder starts with 'streamhelper-' (case insensitive), this part
     will be removed in the macro name.
@@ -99,7 +104,8 @@ def load_macros(config: Config, logger: Logger):
                     if type(cl) == str:
                         logger.debug(' -> Loading macro by initializing a object from given class name')
                         if not isclass(getattr(macro, cl)):
-                            raise AttributeError(f' -> Passed class name {cl} for macro {name} but class was not found.')
+                            raise AttributeError(f' -> Passed class name {cl} for macro {name} but class was not '
+                                                 f'found.')
                         macro_object = getattr(macro, cl)()
                     elif isclass(cl):
                         logger.debug(' -> Loading macro by initializing a object from given class')

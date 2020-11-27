@@ -1,3 +1,6 @@
+"""
+Library to load and handle config values.
+"""
 from os.path import isfile, join, dirname
 from os import getenv, urandom
 from configparser import ConfigParser
@@ -32,6 +35,7 @@ class Config:
     def get(self, app: str, key: str) -> str:
         """
         Get a configuration value for a plugin.
+
         :param app: the plugins internal name
         :param key: the key within the application
         :return: the value associated with the key (or an empty string if non existent)
@@ -44,6 +48,7 @@ class Config:
     def set(self, app: str, key: str, value: str):
         """
         Set a configuration value for a plugin.
+
         :param app: the plugins internal name
         :param key: the key within the application
         :param value: the value to set
@@ -57,6 +62,7 @@ class Config:
     def set_if_none(self, app: str, key: str, value: str):
         """
         Set a configuration value for a plugin but only if the value does not exist.
+
         :param app: the plugins internal name
         :param key: the key within the application
         :param value: the value to set
@@ -72,6 +78,7 @@ class Config:
     def get_or_set(self, app: str, key: str, default_value: str) -> str:
         """
         Reads the configuration value for a plugin, if it does not exist, it set's it to the default value.
+
         :param app: the plugins internal name
         :param key: the key within the application
         :param default_value: the value to set to if the key does not exist
@@ -84,6 +91,7 @@ class Config:
     def has(self, app: str, key: str) -> bool:
         """
         Check if a configuration value for a plugin exists.
+
         :param app: the plugins internal name
         :param key: the key within the application
         :return: Whether the key exists
@@ -97,6 +105,7 @@ class Config:
     def create_section(self, app: str):
         """
         Create a section for the plugin with the given name if not already existent.
+
         :param app: the plugins internal name
         """
         if app not in self._config.sections():
@@ -105,6 +114,7 @@ class Config:
     def flask_config(self) -> dict:
         """
         Get the flask config with recognizable letter capitalization as dictionary.
+
         :return: dictionary containing all settings related to flask
         """
         d = dict(self._config['flask'])

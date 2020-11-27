@@ -1,5 +1,5 @@
 """
-Functions to create and delete loggers as well as auxiliary functions.
+Library for creating and deleting loggers as well as auxiliary functions.
 """
 
 from logging import Logger
@@ -10,6 +10,7 @@ from .system import create_folder
 def setup(logger: Logger, config: Config):
     """
     Configure a passed logger using standardized parameters from configuration.
+
     :param logger: logger to manipulate
     :param config: configuration object
     :return:
@@ -52,6 +53,7 @@ def setup_webapi(webapi, config: Config):
     """
     Create a custom logger and replace the default flask logger from the main application. Do not use for plugin
     specific loggers.
+
     :param webapi: main application object to manipulate it's logger
     :param config: configuration object
     :return:
@@ -73,6 +75,7 @@ def setup_webapi(webapi, config: Config):
 def disassemble(webapi):
     """
     Close all logging handlers on main application.
+
     :param webapi: main application object
     :return:
     """
@@ -87,9 +90,10 @@ def disassemble(webapi):
 def create(name: str, config: Config) -> Logger:
     """
     Creates a new pre-configured logger with the given name.
+
     :param name: name of the new logger
     :param config: configuration object
-    :return: logger
+    :return: logger object
    """
 
     # Create logger

@@ -1,3 +1,6 @@
+"""
+Initializes the base plugin.
+"""
 from flask import Blueprint
 from webapi.libs.config import Config
 from webapi.libs.log import Logger
@@ -14,8 +17,12 @@ provides_pages: list = [
 
 
 def set_blueprint(blueprint: Blueprint):
+    """
+    Plugins factory method to set a blueprint.
+
+    :param blueprint:
+    """
     global bp
     bp = blueprint
 
     from . import routes
-

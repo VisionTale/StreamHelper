@@ -1,3 +1,6 @@
+"""
+Plugin loader and management.
+"""
 from typing import Tuple, List, Dict
 from types import ModuleType
 
@@ -9,9 +12,10 @@ from flask import Blueprint, request, flash
 from webapi.libs.config import Config
 from webapi.libs.log import Logger
 from webapi.libs.api.response import redirect_or_response
+from webapi.libs.api.parsing import param, is_set
 
-Plugins = Dict[str, ModuleType]
-PluginPage = Tuple[str, str, int, str]
+Plugins = Dict[str, ModuleType]  # {plugin_name: module}
+PluginPage = Tuple[str, str, int, str]  # [Page Display Name, Internal Page Route, Sort Nonce, Plugin Name]
 PluginPages = List[PluginPage]
 
 plugins: Plugins = dict()
@@ -24,6 +28,7 @@ log: Logger = None
 def get_plugin_pages() -> PluginPages:
     """
     Returns all pages from plugins that are currently active as sorted list.
+
     :return: list of pages
     """
     plugin_pages.sort(key=sort_pages)
@@ -34,6 +39,7 @@ def get_plugin_pages() -> PluginPages:
 def get_active_plugins() -> List[str]:
     """
     Returns a list of names of active plugins.
+
     :return: list of names
     """
     return active_plugins
@@ -42,6 +48,7 @@ def get_active_plugins() -> List[str]:
 def sort_pages(page: PluginPage) -> Tuple[int, str]:
     """
     Sort key. First the numeric priority value is used to sort, afterwards the name.
+
     :param page: a single page
     :return: the two values by order
     """
@@ -51,6 +58,7 @@ def sort_pages(page: PluginPage) -> Tuple[int, str]:
 def get_plugins_jinja() -> List[Tuple[str, str]]:
     """
     Returns a list containing of tuples, every tuple contains the lowercase name and the description
+
     :return: the list of plugins
     """
     return [
@@ -65,6 +73,7 @@ def get_plugins_jinja() -> List[Tuple[str, str]]:
 def get_plugins() -> Plugins:
     """
     Returns all plugins. The key is the plugin name and the value is the module.
+
     :return: plugin dictionary
     """
     return plugins
@@ -89,6 +98,7 @@ def _save_activated_plugins():
 def _activate_plugin(*names: str):
     """
     Activates all given plugins by their name if the name exists.
+
     :param names: plugin names
     """
     for name in names:
@@ -100,6 +110,7 @@ def _activate_plugin(*names: str):
 def _deactivate_plugin(*names: str):
     """
     Deactivates all given plugins by their name if the plugin is loaded.
+
     :param names: plugin names
     """
     for name in names:
@@ -133,7 +144,7 @@ def load_plugins(webapi, config: Config, logger: Logger):
     """
     Loads all plugins.
 
-    Any folder located in config.get('webapi', 'plugin_path') is tried to import as module except of __pychache__.
+    Any folder located in config.get('webapi', 'plugin_path') is tried to import as module except of __pycache__.
 
     If a plugin's folder starts with 'streamhelper-' (case insensitive), this part will be removed in the plugin name.
 
@@ -224,6 +235,10 @@ def load_plugins(webapi, config: Config, logger: Logger):
         """
         Activates a plugin. At the time, activation and deactivation of plugins only affects the active_plugin() method
         used by the frontend, and does not unload the plugin. TODO Real load/unload
+
+        Arguments:
+            - name
+
         :return: redirect if redirect_url was passed, otherwise response
         """
         plugin_name = param('name')
@@ -238,7 +253,10 @@ def load_plugins(webapi, config: Config, logger: Logger):
         """
         Deactivates a plugin. At the time, activation and deactivation of plugins only affects the active_plugin()
         method used by the frontend, and does not unload the plugin. TODO Real load/unload
-        :return: redirect if redirect_url was passed, otherwise response
+
+        Takes name as an argument. 400 response if missing.
+
+        :return: redirect or response
         """
         plugin_name = param('name')
         if not is_set(plugin_name):
@@ -250,8 +268,10 @@ def load_plugins(webapi, config: Config, logger: Logger):
     @webapi.route('/remove_plugin')
     def remove_plugin():
         """
-        Removes a plugin completely. If flask does not auto reload, the application may need to be restartet for the
+        Removes a plugin completely. If flask does not auto reload, the application may need to be restarted for the
         changes to take effect.
+
+        Arguments:
             - name
 
         :return: redirect if redirect_url was passed, otherwise response

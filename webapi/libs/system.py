@@ -1,3 +1,7 @@
+"""
+Library for OS operations.
+"""
+
 from logging import Logger
 
 
@@ -5,6 +9,7 @@ def create_folder(folder_path, logger: Logger = None):
     """
     Create a folder. If the folder cannot be created, administrator rights are requested (only works on linux) and the
     owner of the folder will be set to the current user.
+
     :param logger: logger object to log to
     :param folder_path: path to create
     :return:
@@ -43,6 +48,7 @@ def create_folder(folder_path, logger: Logger = None):
 def load_export_file(file_path):
     """
     Load exports from a shell file. Every line starting with export will be included into environment.
+
     :param file_path: file to check for export statements
     :return:
     """

@@ -11,6 +11,11 @@ config: Config = None
 
 
 def set_blueprint(blueprint: Blueprint):
+    """
+    Plugins factory method to set a blueprint.
+
+    :param blueprint:
+    """
     global bp
     bp = blueprint
 

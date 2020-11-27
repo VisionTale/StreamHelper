@@ -14,11 +14,11 @@ def redirect_or_response(http_status: int = 200, response_text: str = '', redire
     on the accepted mime types either an json or a plain html response will be created. If neither redirect_url nor
     response_text is set, the result will be empty.
 
-    :param request: the request object of the current request
     :param http_status: status code to pass to the application, defaults to 200
     :param response_text: text to show in the response (ignored if redirect_url is set)
     :param redirect_url: url to redirect to (does not need to be set). If not set, request is checked for a passed
-        redirect_url parameter.
+        redirect_url parameter. If set to None, any other redirect value will be ignored.
+    :param graphical: whether the request answer shall be a website
     :return: the flask return object
     """
     if http_status - 300 >= 0 and graphical:
@@ -45,9 +45,11 @@ def response(http_status: int = 200, response_text: str = '', graphical: bool = 
     Creates a flask return object. Depending on the accepted mime types either an json or a plain html response will be
     created. If response_text is not set, the result will be empty.
 
-    :param request: the request object of the current request
+    Wraps around redirect_or_response, but ignores redirect_url.
+
     :param http_status: status code to pass to the application, defaults to 200
     :param response_text: text to show in the response
+    :param graphical: whether the request answer shall be a website
     :return: the flask return object
     """
     return redirect_or_response(http_status, response_text, redirect_url=None, graphical=graphical)
