@@ -14,5 +14,5 @@ alembic~=1.4.3
 flask-login~=0.5.0
 email-validator~=1.1.1
 flask-bootstrap~=3.3.7.1
-validators~=0.18.1
+validators~=0.18.2
 pytest~=6.1.2
