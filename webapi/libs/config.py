@@ -177,6 +177,7 @@ class Config:
         self.set_if_none('webapi', 'bootstrap_version', getenv('SH_BOOTSTRAP_VERSION') or '4.5.3')
         self.set_if_none('webapi', 'jquery_version', getenv('SH_JQUERY_VERSION') or '3.5.1')
         self.set_if_none('webapi', 'ace_version', getenv('SH_ACE_VERSION') or '1.4.12')
+        self.set_if_none('webapi', 'fontawesome_version', getenv('SH_FONTAWESOME_VERSION') or '5.15.1')
         self.set('webapi', 'data_dir', DATA_DIR)
         self.set('webapi', 'config_dir', CONFIG_DIR)
         self.set('webapi', 'cache_dir', CACHE_DIR)
