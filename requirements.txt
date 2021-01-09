@@ -15,5 +15,5 @@ flask-login~=0.5.0
 email-validator~=1.1.2
 flask-bootstrap~=3.3.7.1
 validators~=0.18.2
-pytest~=6.1.2
+pytest~=6.2.1
 sphinx~=3.3.1
