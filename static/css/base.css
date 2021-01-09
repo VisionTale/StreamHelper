@@ -8,10 +8,14 @@ body {
 }
 
 .navbar, .jumbotron, .btn, .btn:hover, .card-header, .card-body, .input-group-append, .input-group-text,
-    .custom-file-label, .custom-file-label::after, input, img, .custom-select {
+    .custom-file-label, .custom-file-label::after, input, img, .custom-select, .modal-content, .form-control {
     background-color: #1f202d !important;
     color: #1b8fb1 !important;
     border-color: #010101 !important;
+}
+
+.modal-header, .modal-body, .modal-footer {
+    border-color: #161616 !important;
 }
 
 .card-img, .card-img-top {
@@ -78,4 +82,9 @@ input[type="color"]:focus,
 
 .btn-flat:hover {
     background-color: #e03412 !important;
+}
+
+.textarea-modal {
+    font-size: 1.5em;
+    padding-top: 15px;
 }

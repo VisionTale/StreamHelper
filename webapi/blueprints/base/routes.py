@@ -6,11 +6,12 @@ from os.path import join, basename, dirname
 from zipfile import ZipFile
 from time import sleep
 
-from flask import render_template, request, redirect, flash, url_for
+from flask import render_template, request, flash, url_for
 from flask_login import login_required
 from werkzeug.utils import secure_filename
 
 from webapi.libs.api.response import response, redirect_or_response
+from webapi.libs.api.parsing import param
 
 from . import bp, name
 
@@ -116,7 +117,10 @@ def dashboard():
 @login_required
 def install():
     """
-    Install a given zip containing a blueprint.
+    Install a given zip containing a blueprint. If in production mode, changes will only appear after a server reload
+    for now.
+
+    TODO Add a reload mechanism for production mode.
 
     Arguments:
             - plugin (must be a file)
@@ -144,7 +148,7 @@ def install():
         logger.debug('-> Dependencies installed')
 
         sleep(2)
-        return redirect(201, "Installed")
+        return redirect_or_response(201, "Installed", redirect_url=param('redirect_url', url_for(name+'.dashboard')))
     return redirect_or_response(400, 'Missing post parameters')
 
 

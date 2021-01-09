@@ -3,9 +3,11 @@
 {% block page_content %}
     <div class="jumbotron">
         <h1 class="display-4">Hi, {{ current_user.username }}!</h1>
-        <p class="lead">Welcome to the StreamHelper framework. I want to make your streaming and broadcasting experience
-            better by giving you a modular, easy to extend and flexible framework. Here you can add and activate
-            plugins. Without plugins, this framework does not much by itself.</p>
+        {% if get_plugins() == [] %}
+            <p class="lead">Welcome to the StreamHelper framework. I want to make your streaming and broadcasting experience
+                better by giving you a modular, easy to extend and flexible framework. Here you can add and activate
+                plugins. Without plugins, this framework does not much by itself.</p>
+        {% endif %}
         <hr class="my-4">
         <form enctype="multipart/form-data" action="{{ url_for(name+'.install') }}" method="POST">
             <div class="input-group mb-3">

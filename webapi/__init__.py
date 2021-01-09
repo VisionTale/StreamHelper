@@ -29,6 +29,7 @@ login = LoginManager()
 bootstrap = Bootstrap()
 logger: Logger = None
 jinja_env: Environment = None
+first_run = True
 
 
 def create_app():
@@ -38,16 +39,16 @@ def create_app():
 
     :return: the flask application object
     """
-    global logger, jinja_env
+    global logger, jinja_env, first_run
 
     # Ensure bootstrap is available
-    download_bootstrap(static_folder, bootstrap_version)
+    download_bootstrap(get_bootstrap_version())
 
     # Ensure jquery is available
-    download_jquery(static_folder, jquery_version)
+    download_jquery(get_jquery_version())
 
     # Ensure ace is available
-    download_ace(static_folder, ace_version)
+    download_ace(get_ace_version())
 
     # Initialization of the flask application
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -99,7 +100,7 @@ def create_app():
     exec_post_actions()
 
     # Make function callable from jinja templates
-    expose_function_for_templates(len=len, enumerate=enumerate,
+    expose_function_for_templates(len=len, enumerate=enumerate, str=str, int=int, list=list, dict=dict,
                                   get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
                                   get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
                                   get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version,
@@ -159,39 +160,37 @@ def expose_function_for_templates(**kwargs):
     jinja_env.globals.update(**kwargs)
 
 
-def download_bootstrap(static_dir: str, version: str, verbose: bool = True):
+def download_bootstrap(version: str, verbose: bool = True):
     """
     Downloads the bootstrap dist files.
 
-    :param static_dir: global static dir
     :param version: bootstrap version
     :param verbose: whether to print information, defaults to true.
     """
     from os.path import isdir, join
 
-    bootstrap_dir = join(static_dir, f'bootstrap-{version}-dist')
+    bootstrap_dir = join(static_folder, f'bootstrap-{version}-dist')
     if not isdir(bootstrap_dir):
         debug_print("Downloading bootstrap files..", verbose)
         url = f'https://github.com/twbs/bootstrap/releases/download/v{version}/bootstrap-{version}-dist.zip'
         debug_print(f'Download url: {url}', verbose)
 
-        zip_file_fp = join(static_dir, 'bootstrap.zip')
+        zip_file_fp = join(static_folder, 'bootstrap.zip')
         download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
 
         debug_print("Done!", verbose)
 
 
-def download_jquery(static_dir: str, version: str, verbose: bool = True):
+def download_jquery(version: str, verbose: bool = True):
     """
     Downloads the jquery javascript and map files.
 
-    :param static_dir: global static dir
     :param version: jquery version
     :param verbose: whether to print information, defaults to true.
     """
     from os.path import isdir, isfile, join
 
-    jquery_dir = join(static_dir, 'jquery')
+    jquery_dir = join(static_folder, 'jquery')
     if not isdir(jquery_dir) or not isfile(join(jquery_dir, f'jquery-{version}.min.js')):
         debug_print("Downloading jquery files..", verbose)
 
@@ -219,24 +218,23 @@ def download_jquery(static_dir: str, version: str, verbose: bool = True):
         debug_print("Done!", verbose)
 
 
-def download_ace(static_dir: str, version: str, verbose: bool = True):
+def download_ace(version: str, verbose: bool = True):
     """
     Downloads the ace files.
 
-    :param static_dir: global static dir
     :param version: ace version
     :param verbose: whether to print information, defaults to true.
     :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
     """
     from os.path import isdir, join
 
-    ace_dir = join(static_dir, f'ace-builds-{version}')
+    ace_dir = join(static_folder, f'ace-builds-{version}')
     if not isdir(ace_dir):
         debug_print("Downloading ace files..", verbose)
         url = f'https://github.com/ajaxorg/ace-builds/archive/v{version}.zip'
         debug_print(f'Download url: {url}', verbose)
 
-        zip_file_fp = join(static_dir, f'v{version}.zip')
+        zip_file_fp = join(static_folder, f'v{version}.zip')
         download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
 
         debug_print("Done!", verbose)
@@ -260,7 +258,7 @@ def download_and_unzip_archive(url: str, zip_file_fp: str, remove: bool = True, 
     debug_print("Extracting..", verbose)
     from zipfile import ZipFile
     with ZipFile(zip_file_fp, 'r') as zip_file:
-        zip_file.extractall(static_dir)
+        zip_file.extractall(static_folder)
     if remove:
         debug_print("Removing archive..", verbose)
         from os import remove

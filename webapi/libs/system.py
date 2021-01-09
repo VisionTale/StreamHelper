@@ -5,17 +5,16 @@ Library for OS operations.
 from logging import Logger
 
 
-def create_folder(folder_path, logger: Logger = None):
+def create_folder(folder_path: str, logger: Logger = None):
     """
     Create a folder. If the folder cannot be created, administrator rights are requested (only works on linux) and the
     owner of the folder will be set to the current user.
 
-    :param logger: logger object to log to
     :param folder_path: path to create
-    :return:
+    :param logger: logger object to log to
     """
 
-    from sys import platform
+    from sys import platform, stderr
     from os.path import isdir
     from subprocess import run
     from getpass import getuser
@@ -33,7 +32,7 @@ def create_folder(folder_path, logger: Logger = None):
                     if logger:
                         logger.fatal(error_message)
                     else:
-                        print(error_message)
+                        print(error_message, file=stderr)
             else:
                 # TODO Help needed for administrator right request on other platforms
                 error_message = f"Cannot create {folder_path}. Create the folder by hand and assign current user read" \
@@ -42,18 +41,34 @@ def create_folder(folder_path, logger: Logger = None):
                 if logger:
                     logger.fatal(error_message)
                 else:
-                    print(error_message)
+                    print(error_message, file=stderr)
 
 
-def load_export_file(file_path):
+def create_underlying_folder(filepath: str, logger: Logger = None):
+    """
+    Uses dirname on filepath, the result will be used as argument to create_folder().
+
+    :param filepath: path to create underlying folder
+    :param logger: logger object to log to
+    """
+    from os.path import dirname
+    create_folder(dirname(filepath), logger)
+
+
+def load_export_file(file_path: str):
     """
     Load exports from a shell file. Every line starting with export will be included into environment.
 
+    Silently fails if file is missing.
+
     :param file_path: file to check for export statements
-    :return:
     """
 
     from os import environ
+    from os.path import isfile
+
+    if not isfile(file_path):
+        return
 
     with open(file_path, 'r') as f:
         for line in f.readlines():
