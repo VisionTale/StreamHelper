@@ -21,6 +21,7 @@ static_folder = config.get('flask', 'static_path')
 bootstrap_version = config.get('webapi', 'bootstrap_version')
 jquery_version = config.get('webapi', 'jquery_version')
 ace_version = config.get('webapi', 'ace_version')
+fontawesome_version = config.get('webapi', 'fontawesome_version')
 
 # Pre-init flask extensions
 db = SQLAlchemy()
@@ -49,6 +50,9 @@ def create_app():
 
     # Ensure ace is available
     download_ace(get_ace_version())
+
+    # Ensure fontawesome is available
+    download_fontawesome(get_fontawesome_version())
 
     # Initialization of the flask application
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -104,7 +108,8 @@ def create_app():
                                   get_plugin_pages=get_plugin_pages, get_plugins=get_plugins_jinja,
                                   get_active_plugins=get_active_plugins, get_macros=get_macros_jinja,
                                   get_bootstrap_version=get_bootstrap_version, get_jquery_version=get_jquery_version,
-                                  get_ace_version=get_ace_version, camel_case=camel_case)
+                                  get_ace_version=get_ace_version, get_fontawesome_version=get_fontawesome_version,
+                                  camel_case=camel_case)
 
     # Create a basic redirect to the base plugin
     @webapi.route('/')
@@ -240,6 +245,28 @@ def download_ace(version: str, verbose: bool = True):
         debug_print("Done!", verbose)
 
 
+def download_fontawesome(version: str, verbose: bool = True):
+    """
+    Downloads the fontawesome files.
+
+    :param version: ace version
+    :param verbose: whether to print information, defaults to true.
+    :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
+    """
+    from os.path import isdir, join
+
+    fontawesome_dir = join(static_folder, f'fontawesome-free-{version}-web')
+    if not isdir(fontawesome_dir):
+        debug_print("Downloading fontawesome files..", verbose)
+        url = f'https://github.com/FortAwesome/Font-Awesome/releases/download/{version}/fontawesome-free-{version}-web.zip'
+        debug_print(f'Download url: {url}', verbose)
+
+        zip_file_fp = join(static_folder, f'fontawesome-free-{version}-web.zip')
+        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
+
+        debug_print("Done!", verbose)
+
+
 def download_and_unzip_archive(url: str, zip_file_fp: str, remove: bool = True, verbose: bool = True):
     """
     Downloads and unzips an archive.
@@ -290,6 +317,15 @@ def get_ace_version():
     :return: ace version
     """
     return ace_version
+
+
+def get_fontawesome_version():
+    """
+    Get the installed fontawesome version.
+
+    :return: fontawesome version
+    """
+    return fontawesome_version
 
 
 def debug_print(message: str, verbose: bool):
