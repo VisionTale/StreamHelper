@@ -18,10 +18,7 @@ from webapi.libs.text import camel_case
 config = Config()
 template_folder = config.get('flask', 'template_path')
 static_folder = config.get('flask', 'static_path')
-bootstrap_version = config.get('webapi', 'bootstrap_version')
-jquery_version = config.get('webapi', 'jquery_version')
-ace_version = config.get('webapi', 'ace_version')
-fontawesome_version = config.get('webapi', 'fontawesome_version')
+
 
 # Pre-init flask extensions
 db = SQLAlchemy()
@@ -43,15 +40,19 @@ def create_app():
     global logger, jinja_env, first_run
 
     # Ensure bootstrap is available
+    from webapi.libs.deps.bootstrap import download_bootstrap, get_bootstrap_version
     download_bootstrap(get_bootstrap_version())
 
     # Ensure jquery is available
+    from webapi.libs.deps.jquery import download_jquery, get_jquery_version
     download_jquery(get_jquery_version())
 
     # Ensure ace is available
+    from webapi.libs.deps.ace import download_ace, get_ace_version
     download_ace(get_ace_version())
 
     # Ensure fontawesome is available
+    from webapi.libs.deps.fontawesome import download_fontawesome, get_fontawesome_version
     download_fontawesome(get_fontawesome_version())
 
     # Initialization of the flask application
@@ -165,176 +166,19 @@ def expose_function_for_templates(**kwargs):
     jinja_env.globals.update(**kwargs)
 
 
-def download_bootstrap(version: str, verbose: bool = True):
-    """
-    Downloads the bootstrap dist files.
-
-    :param version: bootstrap version
-    :param verbose: whether to print information, defaults to true.
-    """
-    from os.path import isdir, join
-
-    bootstrap_dir = join(static_folder, f'bootstrap-{version}-dist')
-    if not isdir(bootstrap_dir):
-        debug_print("Downloading bootstrap files..", verbose)
-        url = f'https://github.com/twbs/bootstrap/releases/download/v{version}/bootstrap-{version}-dist.zip'
-        debug_print(f'Download url: {url}', verbose)
-
-        zip_file_fp = join(static_folder, 'bootstrap.zip')
-        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
-
-        debug_print("Done!", verbose)
 
 
-def download_jquery(version: str, verbose: bool = True):
-    """
-    Downloads the jquery javascript and map files.
-
-    :param version: jquery version
-    :param verbose: whether to print information, defaults to true.
-    """
-    from os.path import isdir, isfile, join
-
-    jquery_dir = join(static_folder, 'jquery')
-    if not isdir(jquery_dir) or not isfile(join(jquery_dir, f'jquery-{version}.min.js')):
-        debug_print("Downloading jquery files..", verbose)
-
-        from os import mkdir
-        mkdir(jquery_dir)
-
-        js_url = f'https://code.jquery.com/jquery-{version}.min.js'
-        map_url = f'https://code.jquery.com/jquery-{version}.min.map'
-
-        debug_print(f'Download urls: {js_url} + {map_url}', verbose)
-
-        from requests import get
-        js_request = get(js_url)
-        map_request = get(map_url)
-
-        js_fp = join(jquery_dir, f'jquery-{version}.min.js')
-        map_fp = join(jquery_dir, f'jquery-{version}.min.map')
-
-        with open(js_fp, 'wb') as f:
-            f.write(js_request.content)
-
-        with open(map_fp, 'wb') as f:
-            f.write(map_request.content)
-
-        debug_print("Done!", verbose)
 
 
-def download_ace(version: str, verbose: bool = True):
-    """
-    Downloads the ace files.
-
-    :param version: ace version
-    :param verbose: whether to print information, defaults to true.
-    :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
-    """
-    from os.path import isdir, join
-
-    ace_dir = join(static_folder, f'ace-builds-{version}')
-    if not isdir(ace_dir):
-        debug_print("Downloading ace files..", verbose)
-        url = f'https://github.com/ajaxorg/ace-builds/archive/v{version}.zip'
-        debug_print(f'Download url: {url}', verbose)
-
-        zip_file_fp = join(static_folder, f'v{version}.zip')
-        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
-
-        debug_print("Done!", verbose)
 
 
-def download_fontawesome(version: str, verbose: bool = True):
-    """
-    Downloads the fontawesome files.
-
-    :param version: ace version
-    :param verbose: whether to print information, defaults to true.
-    :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
-    """
-    from os.path import isdir, join
-
-    fontawesome_dir = join(static_folder, f'fontawesome-free-{version}-web')
-    if not isdir(fontawesome_dir):
-        debug_print("Downloading fontawesome files..", verbose)
-        url = f'https://github.com/FortAwesome/Font-Awesome/releases/download/{version}/fontawesome-free-{version}-web.zip'
-        debug_print(f'Download url: {url}', verbose)
-
-        zip_file_fp = join(static_folder, f'fontawesome-free-{version}-web.zip')
-        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
-
-        debug_print("Done!", verbose)
 
 
-def download_and_unzip_archive(url: str, zip_file_fp: str, remove: bool = True, verbose: bool = True):
-    """
-    Downloads and unzips an archive.
-    
-    :param url: url to request
-    :param zip_file_fp: filepath for zip
-    :param remove: whether to remove the zip after unpacking, defaults to true. 
-    :param verbose: whether to print information, defaults to true.
-    :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
-    """
-    from requests import get
-    r = get(url)
-    debug_print("Saving archive..", verbose)
-    with open(zip_file_fp, 'wb') as f:
-        f.write(r.content)
-    debug_print("Extracting..", verbose)
-    from zipfile import ZipFile
-    with ZipFile(zip_file_fp, 'r') as zip_file:
-        zip_file.extractall(static_folder)
-    if remove:
-        debug_print("Removing archive..", verbose)
-        from os import remove
-        remove(zip_file_fp)
 
 
-def get_bootstrap_version():
-    """
-    Get the installed bootstrap version.
-
-    :return: bootstrap version
-    """
-    return bootstrap_version
 
 
-def get_jquery_version():
-    """
-    Get the installed jquery version.
-
-    :return: jquery version
-    """
-    return jquery_version
 
 
-def get_ace_version():
-    """
-    Get the installed ace version.
-
-    :return: ace version
-    """
-    return ace_version
 
 
-def get_fontawesome_version():
-    """
-    Get the installed fontawesome version.
-
-    :return: fontawesome version
-    """
-    return fontawesome_version
-
-
-def debug_print(message: str, verbose: bool):
-    """
-    Print if verbose is set to true.
-
-    :param message: message to print
-    :param verbose: whether to print
-    :return:
-    """
-    if verbose:
-        print(message)
