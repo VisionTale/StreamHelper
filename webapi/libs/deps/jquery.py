@@ -2,7 +2,7 @@
 Helper files for JQuery.
 """
 
-from webapi import config
+from webapi import config, static_folder
 from . import debug_print
 
 jquery_version = config.get('webapi', 'jquery_version')

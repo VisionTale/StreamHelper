@@ -7,7 +7,6 @@ from zipfile import ZipFile
 from time import sleep
 
 from flask import render_template, request, flash, url_for
-from flask_login import login_required
 from werkzeug.utils import secure_filename
 
 from webapi.libs.api.response import response, redirect_or_response
@@ -103,7 +102,6 @@ def _install_dependencies(blueprint_name) -> bool:
 
 @bp.route('/', methods=['GET', 'POST'])
 @bp.route('/dashboard', methods=['GET', 'POST'])
-@login_required
 def dashboard():
     """
     Renders the dashboard.
@@ -114,7 +112,6 @@ def dashboard():
 
 
 @bp.route('/install', methods=['POST'])
-@login_required
 def install():
     """
     Install a given zip containing a blueprint. If in production mode, changes will only appear after a server reload

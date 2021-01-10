@@ -2,7 +2,7 @@
 Helper files for Ace.
 """
 
-from webapi import config
+from webapi import config, static_folder
 from . import debug_print, download_and_unzip_archive
 
 ace_version = config.get('webapi', 'ace_version')

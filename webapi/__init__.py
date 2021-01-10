@@ -5,9 +5,6 @@ from typing import Callable
 
 from flask import Flask, Request, redirect, url_for, send_from_directory
 from flask.templating import Environment
-from flask_sqlalchemy import SQLAlchemy
-from flask_migrate import Migrate
-from flask_login import LoginManager
 from flask_bootstrap import Bootstrap
 
 from webapi.libs.config import Config
@@ -19,11 +16,7 @@ config = Config()
 template_folder = config.get('flask', 'template_path')
 static_folder = config.get('flask', 'static_path')
 
-
 # Pre-init flask extensions
-db = SQLAlchemy()
-migrate = Migrate()
-login = LoginManager()
 bootstrap = Bootstrap()
 logger: Logger = None
 jinja_env: Environment = None
@@ -65,28 +58,15 @@ def create_app():
     # Make the jinja_env accessible
     jinja_env = webapi.jinja_env
 
-    # Setup the database
-    db.init_app(webapi)
-    migrate.init_app(webapi, db)
-
-    # Setup the session handler
-    login.init_app(webapi)
-    login.login_view = 'user.login'
-    login.login_message = "Please log in to continue."
-
     # Setup the boostrap extension
     bootstrap.init_app(webapi)
-
-    # Load modules
-    from webapi.modules import models
-    from webapi.modules.models import User
 
     # Load blueprints
     from webapi.plugin import load_plugins, get_plugins, get_plugin_pages, get_active_plugins, _activate_plugin, \
         get_plugins_jinja, exec_post_actions
     load_plugins(webapi, config, logger)
     # Make sure the main components are always activated
-    _activate_plugin('base', 'errors', 'user')
+    _activate_plugin('base', 'errors')
 
     # Load macros
     from webapi.macro import load_macros, get_macros, get_macros_jinja

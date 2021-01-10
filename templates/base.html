@@ -44,19 +44,8 @@
             </button>
         </div>
         <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            {% if current_user.username %}
-                <a class="navbar-brand" href="#">StreamHelper ({{ current_user.username }})</a>
-            {% else %}
-                <a class="navbar-brand" href="#">StreamHelper</a>
-            {% endif %}
+            <a class="navbar-brand" href="#">StreamHelper</a>
             <ul class="nav navbar-nav mr-auto mt-2 mt-lg-0">
-                <li class="nav-item">
-                    {% if current_user.is_anonymous %}
-                        <a class="nav-link" href="{{ url_for('user.login') }}">Login</a>
-                    {% else %}
-                        <a class="nav-link" href="{{ url_for('user.logout') }}">Logout</a>
-                    {% endif %}
-                </li>
                 {% with pages = get_plugin_pages() %}
                 {% if pages %}
                     {% for page in pages %}

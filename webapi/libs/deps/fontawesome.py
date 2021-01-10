@@ -2,7 +2,7 @@
 Helper files for Fontawesome.
 """
 
-from webapi import config
+from webapi import config, static_folder
 from . import debug_print, download_and_unzip_archive
 
 fontawesome_version = config.get('webapi', 'fontawesome_version')

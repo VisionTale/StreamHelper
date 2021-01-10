@@ -2,7 +2,7 @@
 Helper files for Bootstrap.
 """
 
-from webapi import config
+from webapi import config, static_folder
 from . import debug_print, download_and_unzip_archive
 
 bootstrap_version = config.get('webapi', 'bootstrap_version')

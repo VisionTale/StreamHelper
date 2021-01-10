@@ -45,10 +45,6 @@ if __name__ == "__main__":
     else:
         print("Internet not reachable")
 
-    # Initialize db
-    from os.path import isfile
-    check_call(['flask', 'db', 'upgrade'])
-
     # Create application
     from webapi import create_app
     webapi = create_app()
