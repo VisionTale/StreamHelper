@@ -13,6 +13,12 @@
     + [ ] GUI packaging
     + [ ] Sphinx docs generation
     + [ ] Healthcheck
++ [ ] Create Makefile
+  + [ ] AUR Package
+  + [ ] DEB Package
+  + [ ] RPM Package
+  + [ ] EXE Package ?
+  + [ ] DMG/PKG Package ?
 + [ ] Server shutdown/restart
 + [ ] Server restart after plugin/macro installation w/ dependency installation
 + [ ] Move plugin/macro installation to libraries
@@ -31,3 +37,4 @@
 + [ ] Rework plugin installation
 + [ ] Test is Windows/MacOS support is reasonable
 + [ ] Tests
++ [ ] Check for potential (hidden) error throws
