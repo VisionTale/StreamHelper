@@ -6,7 +6,7 @@ from flask import render_template, request
 from . import bp
 
 from webapi import db
-from webapi.libs.api.response import response
+from libs.basics.api.response import response
 
 
 def wants_json_response() -> bool:

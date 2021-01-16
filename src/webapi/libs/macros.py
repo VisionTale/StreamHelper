@@ -4,8 +4,8 @@ Macro loader and management.
 from typing import Tuple, List, Dict, Type
 from types import ModuleType
 
-from webapi.libs.config import Config
-from webapi.libs.log import Logger
+from libs.config import Config
+from libs.log import Logger
 
 Macros = Dict[str, ModuleType]  # {macro_name: module}
 

@@ -7,9 +7,9 @@ from flask import Flask, Request, redirect, url_for, send_from_directory
 from flask.templating import Environment
 from flask_bootstrap import Bootstrap
 
-from webapi.libs.config import Config
-from webapi.libs.log import setup_webapi as setup, Logger
-from webapi.libs.text import camel_case
+from libs.config import Config
+from libs.log import setup_webapi as setup, Logger
+from libs.basics.text import camel_case
 
 # Config loading
 config = Config()
@@ -32,21 +32,19 @@ def create_app():
     """
     global logger, jinja_env, first_run
 
+    from os.path import dirname
+    from sys import path
+    if not dirname(__file__) in path:
+        path.append(dirname(__file__))
+
     # Ensure bootstrap is available
-    from webapi.libs.deps.bootstrap import download_bootstrap, get_bootstrap_version
-    download_bootstrap(get_bootstrap_version())
-
+    from .libs.deps.bootstrap import get_bootstrap_version
     # Ensure jquery is available
-    from webapi.libs.deps.jquery import download_jquery, get_jquery_version
-    download_jquery(get_jquery_version())
-
+    from .libs.deps.jquery import get_jquery_version
     # Ensure ace is available
-    from webapi.libs.deps.ace import download_ace, get_ace_version
-    download_ace(get_ace_version())
-
+    from .libs.deps.ace import get_ace_version
     # Ensure fontawesome is available
-    from webapi.libs.deps.fontawesome import download_fontawesome, get_fontawesome_version
-    download_fontawesome(get_fontawesome_version())
+    from .libs.deps.fontawesome import get_fontawesome_version
 
     # Initialization of the flask application
     webapi = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
@@ -62,14 +60,14 @@ def create_app():
     bootstrap.init_app(webapi)
 
     # Load blueprints
-    from webapi.plugin import load_plugins, get_plugins, get_plugin_pages, get_active_plugins, _activate_plugin, \
+    from libs.plugins import load_plugins, get_plugins, get_plugin_pages, get_active_plugins, _activate_plugin, \
         get_plugins_jinja, exec_post_actions
     load_plugins(webapi, config, logger)
     # Make sure the main components are always activated
     _activate_plugin('base', 'errors')
 
     # Load macros
-    from webapi.macro import load_macros, get_macros, get_macros_jinja
+    from libs.macros import load_macros, get_macros, get_macros_jinja
     load_macros(config, logger)
 
     # Provide plugins with macros

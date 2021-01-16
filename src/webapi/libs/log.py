@@ -3,8 +3,8 @@ Library for creating and deleting loggers as well as auxiliary functions.
 """
 
 from logging import Logger
-from .config import Config
-from .system import create_folder
+from libs.config import Config
+from libs.basics.file import create_folder
 
 
 def setup(logger: Logger, config: Config):
@@ -13,6 +13,7 @@ def setup(logger: Logger, config: Config):
 
     :param logger: logger to manipulate
     :param config: configuration object
+    :raises OSError: if folder or file creation fails
     :return:
     """
 

@@ -15,12 +15,13 @@ def debug_print(message: str, verbose: bool):
         print(message)
 
 
-def download_and_unzip_archive(url: str, zip_file_fp: str, remove: bool = True, verbose: bool = True):
+def download_and_unzip_archive(url: str, zip_file_fp: str, static_folder: str, remove: bool = True, verbose: bool = True):
     """
     Downloads and unzips an archive.
 
     :param url: url to request
     :param zip_file_fp: filepath for zip
+    :param static_folder: folder for flasks static files
     :param remove: whether to remove the zip after unpacking, defaults to true.
     :param verbose: whether to print information, defaults to true.
     :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall

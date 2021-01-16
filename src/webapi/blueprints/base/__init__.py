@@ -2,8 +2,8 @@
 Initializes the base plugin.
 """
 from flask import Blueprint
-from webapi.libs.config import Config
-from webapi.libs.log import Logger
+from libs.config import Config
+from libs.log import Logger
 
 description: str = "Dashboard and other basic framework sites"
 

@@ -16,7 +16,7 @@ if __name__ == "__main__":
     # Load .flaskenv
     from os.path import isfile
     if isfile('.flaskenv'):
-        from libs.system import load_export_file
+        from libs.basics.system import load_export_file
         load_export_file('.flaskenv')
 
     # Pre-load config
@@ -24,7 +24,7 @@ if __name__ == "__main__":
     config = Config()
 
     # Install python packages
-    from libs.network import is_up
+    from libs.basics.network import is_up
     if is_up("8.8.8.8") or is_up("1.1.1.1"):
         from sys import executable
         from subprocess import check_call

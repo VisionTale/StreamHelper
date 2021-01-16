@@ -2,20 +2,19 @@
 Helper files for Ace.
 """
 
-from webapi import config, static_folder
-from . import debug_print, download_and_unzip_archive
 
-ace_version = config.get('webapi', 'ace_version')
-
-
-def download_ace(version: str, verbose: bool = True):
+def download(version: str, static_folder: str, verbose: bool = True):
     """
     Downloads the ace files.
 
+    Does not execute if folder already exists.
+
     :param version: ace version
+    :param static_folder: folder for flasks static files
     :param verbose: whether to print information, defaults to true.
     :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
     """
+    from . import debug_print, download_and_unzip_archive
     from os.path import isdir, join
 
     ace_dir = join(static_folder, f'ace-builds-{version}')
@@ -25,7 +24,7 @@ def download_ace(version: str, verbose: bool = True):
         debug_print(f'Download url: {url}', verbose)
 
         zip_file_fp = join(static_folder, f'v{version}.zip')
-        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
+        download_and_unzip_archive(url, zip_file_fp, static_folder, verbose=verbose)
 
         debug_print("Done!", verbose)
 
@@ -36,4 +35,5 @@ def get_ace_version():
 
     :return: ace version
     """
-    return ace_version
+    from webapi import config
+    return config.get('webapi', 'ace_version')

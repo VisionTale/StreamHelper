@@ -2,8 +2,8 @@
 Initializes the errors plugin.
 """
 from flask import Blueprint, render_template, request
-from webapi.libs.config import Config
-from webapi.libs.log import Logger
+from libs.config import Config
+from libs.log import Logger
 
 description: str = "Http error pages"
 

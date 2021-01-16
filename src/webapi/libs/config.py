@@ -28,6 +28,8 @@ class Config:
         """
         self._config_fp = getenv('SH_CONFIG_FP') or join(CONFIG_DIR, 'config.ini')
         self._config = ConfigParser()
+        from .basics.file import create_underlying_folder
+        create_underlying_folder(self._config_fp)
         if isfile(self._config_fp):
             self._config.read(self._config_fp)
         self.update_config()
@@ -152,11 +154,13 @@ class Config:
         - SH_THUMBNAIL_PATH : Directory containing all thumbnails. Defaults to $SH_CACHE_DIR/thumbnails.
         - SH_BOOTSTRAP_VERSION : Version of bootstrap to use. Defaults to 4.5.3
         - SH_JQUERY_VERSION : Version of jquery to use. Defaults to 3.5.
+        - SH_ACE_VERSION : Version of ace to use. Defaults to 1.4.12.
+        - SH_FONTAWESOME_VERSION : Version of fontawesome to use. Defaults to 5.15.1.
         """
 
         from os.path import isdir, dirname
         if not isdir(dirname(self._config_fp)):
-            from webapi.libs.system import create_folder
+            from .basics.file import create_folder
             create_folder(dirname(self._config_fp))
 
         self.set_if_none('flask', 'SECRET_KEY', getenv('SECRET_KEY') or urandom(24).hex())
@@ -181,17 +185,19 @@ class Config:
         self.set('webapi', 'data_dir', DATA_DIR)
         self.set('webapi', 'config_dir', CONFIG_DIR)
         self.set('webapi', 'cache_dir', CACHE_DIR)
-        Path(CACHE_DIR).mkdir(parents=True, exist_ok=True)
-        Path(CONFIG_DIR).mkdir(parents=True, exist_ok=True)
-        Path(DATA_DIR).mkdir(parents=True, exist_ok=True)
-        Path(self.get('flask', 'template_path')).mkdir(parents=True, exist_ok=True)
-        Path(self.get('flask', 'static_path')).mkdir(parents=True, exist_ok=True)
-        Path(dirname(self.get('flask', 'sqlalchemy_database_uri').split('///')[1])).mkdir(parents=True, exist_ok=True)
-        Path(dirname(self.get('webapi', 'log_fp'))).mkdir(parents=True, exist_ok=True)
-        Path(self.get('webapi', 'plugin_path')).mkdir(parents=True, exist_ok=True)
-        Path(self.get('webapi', 'macro_path')).mkdir(parents=True, exist_ok=True)
-        Path(self.get('webapi', 'media_path')).mkdir(parents=True, exist_ok=True)
-        Path(self.get('webapi', 'thumbnail_path')).mkdir(parents=True, exist_ok=True)
+
+        from .basics.file import create_folder
+        create_folder(CACHE_DIR)
+        create_folder(CONFIG_DIR)
+        create_folder(DATA_DIR)
+        create_folder(self.get('flask', 'template_path'))
+        create_folder(self.get('flask', 'static_path'))
+        create_folder(dirname(self.get('flask', 'sqlalchemy_database_uri').split('///')[1]))
+        create_folder(dirname(self.get('webapi', 'log_fp')))
+        create_folder(self.get('webapi', 'plugin_path'))
+        create_folder(self.get('webapi', 'macro_path'))
+        create_folder(self.get('webapi', 'media_path'))
+        create_folder(self.get('webapi', 'thumbnail_path'))
 
 
 if __name__ == '__main__':

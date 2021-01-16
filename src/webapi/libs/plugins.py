@@ -9,10 +9,10 @@ from os.path import isdir, join
 
 from flask import Blueprint, request, flash
 
-from webapi.libs.config import Config
-from webapi.libs.log import Logger
-from webapi.libs.api.response import redirect_or_response
-from webapi.libs.api.parsing import param, is_set
+from libs.config import Config
+from libs.log import Logger
+from libs.basics.api.response import redirect_or_response
+from libs.basics.api.parsing import param, is_set
 
 Plugins = Dict[str, ModuleType]  # {plugin_name: module}
 PluginPage = Tuple[str, str, int, str]  # [Page Display Name, Internal Page Route, Sort Nonce, Plugin Name]

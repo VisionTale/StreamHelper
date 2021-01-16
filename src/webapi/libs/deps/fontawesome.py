@@ -2,20 +2,19 @@
 Helper files for Fontawesome.
 """
 
-from webapi import config, static_folder
-from . import debug_print, download_and_unzip_archive
 
-fontawesome_version = config.get('webapi', 'fontawesome_version')
-
-
-def download_fontawesome(version: str, verbose: bool = True):
+def download(version: str, static_folder: str, verbose: bool = True):
     """
     Downloads the fontawesome files.
 
+    Does not execute if folder already exists.
+
     :param version: ace version
+    :param static_folder: folder for flasks static files
     :param verbose: whether to print information, defaults to true.
     :exception OSError: os.remove, requests.get, open, TextIOWrapper.write, ZipFile, ZipFile.extractall
     """
+    from . import debug_print, download_and_unzip_archive
     from os.path import isdir, join
 
     fontawesome_dir = join(static_folder, f'fontawesome-free-{version}-web')
@@ -26,7 +25,7 @@ def download_fontawesome(version: str, verbose: bool = True):
         debug_print(f'Download url: {url}', verbose)
 
         zip_file_fp = join(static_folder, f'fontawesome-free-{version}-web.zip')
-        download_and_unzip_archive(url, zip_file_fp, verbose=verbose)
+        download_and_unzip_archive(url, zip_file_fp, static_folder, verbose=verbose)
 
         debug_print("Done!", verbose)
 
@@ -37,4 +36,5 @@ def get_fontawesome_version():
 
     :return: fontawesome version
     """
-    return fontawesome_version
+    from webapi import config
+    return config.get('webapi', 'fontawesome_version')

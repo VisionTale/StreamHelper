@@ -2,19 +2,18 @@
 Helper files for JQuery.
 """
 
-from webapi import config, static_folder
-from . import debug_print
 
-jquery_version = config.get('webapi', 'jquery_version')
-
-
-def download_jquery(version: str, verbose: bool = True):
+def download(version: str, static_folder: str, verbose: bool = True):
     """
     Downloads the jquery javascript and map files.
 
+    Does not execute if folder and file already exists.
+
     :param version: jquery version
+    :param static_folder: folder for flasks static files
     :param verbose: whether to print information, defaults to true.
     """
+    from . import debug_print
     from os.path import isdir, isfile, join
 
     jquery_dir = join(static_folder, 'jquery')
@@ -51,4 +50,5 @@ def get_jquery_version():
 
     :return: jquery version
     """
-    return jquery_version
+    from webapi import config
+    return config.get('webapi', 'jquery_version')

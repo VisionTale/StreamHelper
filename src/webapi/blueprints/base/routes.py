@@ -9,8 +9,8 @@ from time import sleep
 from flask import render_template, request, flash, url_for
 from werkzeug.utils import secure_filename
 
-from webapi.libs.api.response import response, redirect_or_response
-from webapi.libs.api.parsing import param
+from libs.basics.api.response import response, redirect_or_response
+from libs.basics.api.parsing import param
 
 from . import bp, name
 
