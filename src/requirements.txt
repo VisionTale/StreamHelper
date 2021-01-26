@@ -9,5 +9,5 @@ WTForms-Components~=0.10.4
 colour~=0.1.5
 flask-bootstrap~=3.3.7.1
 validators~=0.18.2
-pytest~=6.2.1
+pytest~=6.2.2
 sphinx~=3.3.1
